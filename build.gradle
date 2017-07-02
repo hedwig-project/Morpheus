@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'org.springframework.boot' version '1.5.4.RELEASE'
+}
+
+jar {
+    group 'com.hedwig'
+    version '1.0-SNAPSHOT'
+    sourceCompatibility = 1.8
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url "http://repo.spring.io/snapshot" }
+    maven { url "http://repo.spring.io/milestone" }
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/junit/junit
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.client.mqttv3
+    compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.1.1'
+
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcmail-jdk15on
+    compile group: 'org.bouncycastle', name: 'bcmail-jdk15on', version: '1.56'
+
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
+    compile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.56'
+
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
+    compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.56'
+
+    // https://mvnrepository.com/artifact/commons-codec/commons-codec
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
+
+    // Spring Boot starter
+    compile("org.springframework.boot:spring-boot-starter")
+
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+}

@@ -1,0 +1,9 @@
+mqttServer:
+  certificate:
+    caCertificate: /home/hugo/Documents/TCC/morpheus/src/main/resources/certificates/ca.crt
+    serverCertificate: /home/hugo/Documents/TCC/morpheus/src/main/resources/certificates/device001.der
+    serverKey: /home/hugo/Documents/TCC/morpheus/src/main/resources/certificates/device001.key
+  configuration:
+    id: morpheus-localServer
+    name: localhost
+    port: 8883
