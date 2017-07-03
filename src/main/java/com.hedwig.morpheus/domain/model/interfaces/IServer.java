@@ -13,7 +13,7 @@ public interface IServer {
 
     void shutdown();
 
-    boolean subscribe(String topic);
+    void subscribe(String topic, Runnable successfullySubscribed, Runnable failureInSubscription);
 
     boolean unsubscribe(String topic);
 }

@@ -81,8 +81,6 @@ public class MQTTServer implements IServer {
 
     IMqttToken mqttConnectToken;
 
-    public static final int[] counter = new int[5001];
-
     @Autowired
     private MQTTServer(@Qualifier("incomeMessageQueue") MessageQueue incomeMessageQueue,
                        @Qualifier("outputMessageQueue") MessageQueue outputMessageQueue, Environment environment) throws Exception {
@@ -160,57 +158,6 @@ public class MQTTServer implements IServer {
         mqttConnectToken.waitForCompletion();
     }
 
-//    private void startMessageSending() {
-////        threadPool.execute(() -> {
-////            while (true) {
-////                Message message = outputMessageQueue.pop();
-////                threadPool.execute(() -> {
-////                    MqttMessage mqttMessage = new MqttMessage(message.toString().getBytes());
-////                    try {
-////                        IMqttDeliveryToken deliveryToken =
-////                                mqttAsyncClient.publish(message.getTopic(), mqttMessage, null, null);
-////                        logger.info("Message sent to module");
-////                        deliveryToken.waitForCompletion();
-////                    } catch (MqttException e) {
-////                        logger.error("Could not send message", e);
-////                    }
-////                });
-////            }
-////        });
-//        threadPool.execute(() -> {
-//            while(true) {
-//                threadPool.execute(() -> {
-//                    Message message = outputMessageQueue.pop();
-//                    MqttMessage mqttMessage = new MqttMessage(message.toString().getBytes());
-//                    mqttMessage.setQos(message.getQosLevel());
-//
-//                    IMqttActionListener pubListener = new IMqttActionListener() {
-//                        @Override
-//                        public void onSuccess(IMqttToken asyncActionToken) {
-//                            logger.info("Message successfully sent");
-//
-//                            // to be deleted
-//                            int position = message.getId();
-//                            counter[position] = position;
-//                        }
-//
-//                        @Override
-//                        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-//                            logger.info("Message could not be sent");
-//                            // TODO : Resending routine
-//                        }
-//                    };
-//
-//                    try {
-//                        mqttAsyncClient.publish(message.getTopic(), mqttMessage, null, pubListener);
-//                    } catch (MqttException e) {
-//                        e.printStackTrace();
-//                    }
-//                });
-//            }
-//        });
-//    }
-
     private void startMessageSending() {
         Thread senderThread = new Thread(() -> {
             while(true) {
@@ -222,16 +169,12 @@ public class MQTTServer implements IServer {
                     IMqttActionListener pubListener = new IMqttActionListener() {
                         @Override
                         public void onSuccess(IMqttToken asyncActionToken) {
-                            logger.info("Message successfully sent");
-
-                            // to be deleted
-                            int position = message.getId();
-                            counter[position] = position;
+                            logger.info(String.format("Message %s successfully sent", message.getId()));
                         }
 
                         @Override
                         public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                            logger.info("Message could not be sent");
+                            logger.info(String.format("Message %s could not be sent", message.getId()));
                             // TODO : Resending routine
                         }
                     };
@@ -239,7 +182,7 @@ public class MQTTServer implements IServer {
                     try {
                         mqttAsyncClient.publish(message.getTopic(), mqttMessage, null, pubListener);
                     } catch (MqttException e) {
-                        e.printStackTrace();
+                        logger.error("Error publishing message", e);
                     }
                 });
             }
@@ -250,28 +193,21 @@ public class MQTTServer implements IServer {
     }
 
     @Override
-    public boolean subscribe(String topic) {
-        // TODO: This has to be async
-
-        try {
-            IMqttToken mqttToken = mqttAsyncClient.subscribe(topic, 0, null, new IMqttActionListener() {
+    public void subscribe(String topic, Runnable successfullySubscribed, Runnable failureInSubscription) {
+           try {
+            mqttAsyncClient.subscribe(topic, 0, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
-                    // TODO: communicate success
+                    successfullySubscribed.run();
                 }
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    // TODO: Communicate failure
+                    failureInSubscription.run();
                 }
             });
-
-            mqttToken.waitForCompletion();
-
-            return true;
         } catch (MqttException e) {
-            e.printStackTrace();
-            return false;
+            logger.error("Error in subscription", e);
         }
     }
 
@@ -281,7 +217,7 @@ public class MQTTServer implements IServer {
         receiversThreadPool.shutdown();
         try {
             mqttAsyncClient.disconnect();
-            logger.info("Server successfully disconected");
+            logger.info("Server successfully disconnected");
         } catch (MqttException e) {
             logger.error("Could not disconnect properly", e);
         }
@@ -292,22 +228,4 @@ public class MQTTServer implements IServer {
     public boolean unsubscribe(String topic) {
         throw new NotImplementedException();
     }
-
-//    public static MQTTServer build(String mqttServerHost,
-//                            int mqttServerPort,
-//                            Path caCertificate,
-//                            Path clientCertificate,
-//                            Path clientKey,
-//                            IMessageManager messageManager) {
-//        try {
-//            return new MQTTServer(mqttServerHost,
-//                                  mqttServerPort,
-//                                  caCertificate,
-//                                  clientCertificate,
-//                                  clientKey,
-//                                  messageManager);
-//        } catch (Exception e) {
-//            throw new IllegalStateException("IServer could not be created.", e);
-//        }
-//    }
 }

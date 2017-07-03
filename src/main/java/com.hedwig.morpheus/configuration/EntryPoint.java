@@ -27,6 +27,14 @@ public class EntryPoint implements ApplicationRunner {
         ApplicationContext context = SpringApplication.run(EntryPoint.class, args);
         Morpheus morpheus = context.getBean(Morpheus.class);
         morpheus.start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if(morpheus != null) {
+                morpheus.shutdown();
+            }
+        }));
+
+        while (true);
     }
 
     @Bean(name = "incomeMessageQueue")

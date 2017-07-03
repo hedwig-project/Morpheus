@@ -39,5 +39,8 @@ dependencies {
     // Spring Boot starter
     compile("org.springframework.boot:spring-boot-starter")
 
+    // https://mvnrepository.com/artifact/org.mockito/mockito-all
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+
     testCompile("org.springframework.boot:spring-boot-starter-test")
 }

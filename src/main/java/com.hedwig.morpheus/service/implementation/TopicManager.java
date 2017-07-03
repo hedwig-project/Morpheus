@@ -2,6 +2,8 @@ package com.hedwig.morpheus.service.implementation;
 
 import com.hedwig.morpheus.domain.model.interfaces.IServer;
 import com.hedwig.morpheus.service.interfaces.ITopicManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,8 @@ import java.util.List;
 @Scope("singleton")
 public class TopicManager implements ITopicManager {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final List<String> subscribedTopics;
     private final IServer server;
 
@@ -26,11 +30,22 @@ public class TopicManager implements ITopicManager {
     }
 
     @Override
-    public boolean subscribe(String topic) {
-        if (subscribedTopics.contains(topic)) return false;
+    public void subscribe(String topic) {
+        if (subscribedTopics.contains(topic)) {
+            logger.info(String.format("Topic %s is already in subscription list", topic));
+            return;
+        }
 
-        subscribedTopics.add(topic);
-        return server.subscribe(topic);
+        Runnable successfullySubscribed = () -> {
+            subscribedTopics.add(topic);
+            logger.info(String.format("Successfully subscribed to topic %s", topic));
+        };
+
+        Runnable failureInSubscription = () -> {
+            logger.error(String.format("Failed to subscribe to topic %s", topic));
+        };
+
+        server.subscribe(topic, successfullySubscribed, failureInSubscription);
     }
 
     @Override
@@ -40,5 +55,10 @@ public class TopicManager implements ITopicManager {
 
         subscribedTopics.remove(topic);
         return server.unsubscribe(topic);
+    }
+
+    @Override
+    public boolean isSubscribed(String topic) {
+        return subscribedTopics.contains(topic);
     }
 }

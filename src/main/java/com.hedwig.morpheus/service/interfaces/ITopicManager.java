@@ -4,7 +4,9 @@ package com.hedwig.morpheus.service.interfaces;
  * Created by hugo. All rights reserved.
  */
 public interface ITopicManager {
-    boolean subscribe(String topic);
+    void subscribe(String topic);
 
     boolean unsubscribe(String topic);
+
+    boolean isSubscribed(String topic);
 }

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  * Created by hugo. All rights reserved.
  */
 public class Message implements Comparable<Message> {
-    private int id;
+    private String id;
     private QualityOfService qosLevel;
     private final String topic;
     private final MessageType type;
@@ -25,6 +25,12 @@ public class Message implements Comparable<Message> {
         this.priority = MessagePriority.NORMAL;
 
         this.qosLevel = QualityOfService.FIRST_LEVEL;
+
+        createId();
+    }
+
+    private void createId() {
+        id = String.format("%d%d", this.hashCode(), System.currentTimeMillis());
     }
 
     @Override
@@ -83,12 +89,8 @@ public class Message implements Comparable<Message> {
         }
     }
 
-    public int getId() {
+    public String getId() {
         return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public MessagePriority getPriority() {

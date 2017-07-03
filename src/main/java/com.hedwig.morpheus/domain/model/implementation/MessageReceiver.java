@@ -45,11 +45,11 @@ public class MessageReceiver implements IMessageReceiver {
     @Override
     public void processIncomeMessage(Message message) {
         try {
-            logger.info("Starting message processing");
+            logger.info(String.format("Starting message processing for %s", message.getId()));
             Thread.sleep(5000);
-            logger.info("Message successfully parsed: " + message.getTopic());
+            logger.info(String.format("Message %s successfully processed", message.getId()));
         } catch (InterruptedException e) {
-            logger.error("Error processing message", e);
+            logger.error(String.format("Error processing message %s", message.getId()), e);
         }
     }
 

@@ -1,8 +1,6 @@
 package com.hedwig.morpheus.business;
 
 import com.hedwig.morpheus.configuration.EntryPoint;
-import com.hedwig.morpheus.domain.model.implementation.MQTTServer;
-import com.hedwig.morpheus.domain.model.implementation.Message;
 import com.hedwig.morpheus.domain.model.implementation.Module;
 import com.hedwig.morpheus.domain.model.interfaces.IMessageReceiver;
 import com.hedwig.morpheus.domain.model.interfaces.IServer;
@@ -15,8 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
 
 /**
  * Created by hugo on 21/05/17. All rights reserved.
@@ -58,38 +54,10 @@ public class Morpheus {
 
         Module livingRoom = new Module("1", "livingRoom", "hw/livingRoom1");
         moduleManager.registerModule(livingRoom);
+    }
 
-        for (int counter = 1; counter <= 500; counter++) {
-            Message message = new Message(kitchen.getPublishToTopic(),
-                                          Message.MessageType.CONFIGURATION,
-                                          new Message.MessageBody("Message number: " + counter));
-
-            message.setId(counter);
-
-            message.addControlParameter(new Message.ControlParameter("ts", new Date(new Long("1497209392924")).toString()));
-            message.addControlParameter(new Message.ControlParameter("ty", "timeAddition"));
-
-            messageManager.sendMessage(message);
-
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        boolean success = true;
-
-        for(int counter = 1; counter <= 500; counter++) {
-            if(MQTTServer.counter[counter] != counter) {
-                logger.error("Counter " + counter + " is wrong and got value " + MQTTServer.counter[counter]);
-                success = false;
-
-            }
-        }
-
-        logger.info("Success: " + success);
-
+    public void shutdown() {
+        logger.info("Shutting down Morpheus");
         server.shutdown();
     }
 
