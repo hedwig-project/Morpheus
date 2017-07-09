@@ -11,11 +11,11 @@ import static java.util.Objects.hash;
  * Created by hugo. All rights reserved.
  */
 public class Message implements Comparable<Message> {
-    private String id;
-    private QualityOfService qosLevel;
-    private final String topic;
     private final MessageType type;
     private final List<ControlParameter> controlParameters;
+    private String id;
+    private QualityOfService qosLevel;
+    private String topic;
     private MessageBody body;
     private MessagePriority priority;
 
@@ -42,51 +42,6 @@ public class Message implements Comparable<Message> {
         return this.priority.compareTo(m.getPriority());
     }
 
-    public enum MessageType {
-        CONFIGURATION("configuration"),
-        ACTION_REQUEST("action_request"),
-        CONFIRMATION("confirmation"),
-        DATA_TRANSMISSION("data_transmission"),
-        DATA_REQUEST("data_request");
-
-        private final String headerValue;
-
-        MessageType(String headerValue) {
-            this.headerValue = headerValue;
-        }
-
-        public String getHeaderValue() {
-            return headerValue;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("#%s\n", headerValue);
-        }
-    }
-
-    public enum MessagePriority {
-        HIGH,
-        NORMAL,
-        LOW;
-    }
-
-    public enum QualityOfService {
-        FIRST_LEVEL(1),
-        SECOND_LEVEL(2),
-        THIRD_LEVEL(3);
-
-        private final int qosLevel;
-
-        QualityOfService(int qosLevel) {
-            this.qosLevel = qosLevel;
-        }
-
-        public int getQosLevel() {
-            return qosLevel;
-        }
-    }
-
     public String getId() {
         return id;
     }
@@ -101,6 +56,10 @@ public class Message implements Comparable<Message> {
 
     public String getTopic() {
         return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     public List<ControlParameter> getControlParameters() {
@@ -151,6 +110,47 @@ public class Message implements Comparable<Message> {
 
     public int hashCode() {
         return hash(topic, type, controlParameters, body);
+    }
+
+    public enum MessageType {
+        CONFIGURATION("configuration"),
+        ACTION_REQUEST("action_request"),
+        CONFIRMATION("confirmation"),
+        DATA_TRANSMISSION("data_transmission"),
+        DATA_REQUEST("data_request");
+
+        private final String headerValue;
+
+        MessageType(String headerValue) {
+            this.headerValue = headerValue;
+        }
+
+        public String getHeaderValue() {
+            return headerValue;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("#%s\n", headerValue);
+        }
+    }
+
+    public enum MessagePriority {
+        HIGH, NORMAL, LOW;
+    }
+
+    public enum QualityOfService {
+        FIRST_LEVEL(1), SECOND_LEVEL(2), THIRD_LEVEL(3);
+
+        private final int qosLevel;
+
+        QualityOfService(int qosLevel) {
+            this.qosLevel = qosLevel;
+        }
+
+        public int getQosLevel() {
+            return qosLevel;
+        }
     }
 
     public static class MessageBody {

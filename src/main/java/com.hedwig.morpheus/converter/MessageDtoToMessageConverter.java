@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.rest.converter;
+package com.hedwig.morpheus.converter;
 
 import com.hedwig.morpheus.domain.model.implementation.Message;
 import com.hedwig.morpheus.rest.model.ControlParameterDto;

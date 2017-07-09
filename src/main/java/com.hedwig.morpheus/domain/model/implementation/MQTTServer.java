@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -53,6 +54,7 @@ public class MQTTServer implements IServer {
 
     private final ExecutorService sendersThreadPool = Executors.newFixedThreadPool(MAX_POOL_SIZE, new ThreadFactory() {
         private AtomicInteger atomicCounter = new AtomicInteger(1);
+
         @Override
         public Thread newThread(Runnable r) {
             Thread thread = new Thread(r);
@@ -62,17 +64,20 @@ public class MQTTServer implements IServer {
         }
     });
 
-    private final ExecutorService receiversThreadPool = Executors.newFixedThreadPool(MAX_POOL_SIZE, new ThreadFactory() {
-        private AtomicInteger atomicCounter = new AtomicInteger(1);
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setName(String.format("MQTTReceiverThread-%d", atomicCounter.getAndIncrement()));
-            thread.setDaemon(true);
-            return thread;
-        }
-    });
+    private final ExecutorService receiversThreadPool =
+            Executors.newFixedThreadPool(MAX_POOL_SIZE, new ThreadFactory() {
+                private AtomicInteger atomicCounter = new AtomicInteger(1);
 
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread thread = new Thread(r);
+                    thread.setName(String.format("MQTTReceiverThread-%d", atomicCounter.getAndIncrement()));
+                    thread.setDaemon(true);
+                    return thread;
+                }
+            });
+
+    private final ConversionService conversionService;
 
     private final MessageQueue incomeMessageQueue;
     private final MessageQueue outputMessageQueue;
@@ -83,7 +88,9 @@ public class MQTTServer implements IServer {
 
     @Autowired
     private MQTTServer(@Qualifier("incomeMessageQueue") MessageQueue incomeMessageQueue,
-                       @Qualifier("outputMessageQueue") MessageQueue outputMessageQueue, Environment environment) throws Exception {
+                       @Qualifier("outputMessageQueue") MessageQueue outputMessageQueue,
+                       Environment environment,
+                       ConversionService conversionService) throws Exception {
 
         this.id = environment.getProperty("mqttServer.configuration.id");
         this.port = Integer.parseInt(environment.getProperty("mqttServer.configuration.port"));
@@ -95,6 +102,8 @@ public class MQTTServer implements IServer {
         this.caCertificate = Paths.get(environment.getProperty("mqttServer.certificate.caCertificate"));
         this.serverCertificate = Paths.get(environment.getProperty("mqttServer.certificate.serverCertificate"));
         this.serverKey = Paths.get(environment.getProperty("mqttServer.certificate.serverKey"));
+
+        this.conversionService = conversionService;
 
         mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
@@ -128,14 +137,20 @@ public class MQTTServer implements IServer {
                 receiversThreadPool.execute(() -> {
                     logger.info("New message received from module: " + topic);
                     try {
-                        Thread.sleep(5000);
+                        Thread.sleep(5000); // Remove when actual behavior is implemented
                     } catch (InterruptedException e) {
                         logger.error("Error in thread sleep", e);
-
                     }
-                    Message message = new Message(topic,
-                                                  Message.MessageType.DATA_TRANSMISSION,
-                                                  new Message.MessageBody(new String(mqttMessage.getPayload())));
+
+                    Message message = conversionService.convert(mqttMessage, Message.class);
+
+                    if(null == message) {
+                        logger.error("Could not convert message", new IllegalStateException());
+                        return;
+                    }
+
+                    message.setTopic(topic);
+
                     incomeMessageQueue.push(message);
                 });
             }
@@ -160,7 +175,7 @@ public class MQTTServer implements IServer {
 
     private void startMessageSending() {
         Thread senderThread = new Thread(() -> {
-            while(true) {
+            while (true) {
                 Message message = outputMessageQueue.pop();
                 sendersThreadPool.execute(() -> {
                     MqttMessage mqttMessage = new MqttMessage(message.toString().getBytes());
@@ -194,7 +209,7 @@ public class MQTTServer implements IServer {
 
     @Override
     public void subscribe(String topic, Runnable successfullySubscribed, Runnable failureInSubscription) {
-           try {
+        try {
             mqttAsyncClient.subscribe(topic, 0, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
