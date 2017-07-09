@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan("com.hedwig.morpheus")
 @Configuration
 public class EntryPoint implements ApplicationRunner {
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
     }

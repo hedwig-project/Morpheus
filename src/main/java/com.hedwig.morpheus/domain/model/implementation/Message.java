@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.hash;
+
 /**
  * Created by hugo. All rights reserved.
  */
@@ -30,7 +32,9 @@ public class Message implements Comparable<Message> {
     }
 
     private void createId() {
-        id = String.format("%d%d", this.hashCode(), System.currentTimeMillis());
+        int hashValue = Objects.hash(type, body, topic);
+
+        id = String.format("%d%d", hashValue, System.currentTimeMillis());
     }
 
     @Override
@@ -39,22 +43,16 @@ public class Message implements Comparable<Message> {
     }
 
     public enum MessageType {
-        CONFIGURATION(true, "configuration"),
-        ACTION_REQUEST(true, "action_request"),
-        CONFIRMATION(false, "confirmation"),
-        DATA_TRANSMISSION(false, "data_transmission"),
-        DATA_REQUEST(false, "data_request");
+        CONFIGURATION("configuration"),
+        ACTION_REQUEST("action_request"),
+        CONFIRMATION("confirmation"),
+        DATA_TRANSMISSION("data_transmission"),
+        DATA_REQUEST("data_request");
 
-        private final boolean serverAsOrigin;
         private final String headerValue;
 
-        MessageType(boolean serverAsOrigin, String headerValue) {
-            this.serverAsOrigin = serverAsOrigin;
+        MessageType(String headerValue) {
             this.headerValue = headerValue;
-        }
-
-        public boolean isServerAsOrigin() {
-            return serverAsOrigin;
         }
 
         public String getHeaderValue() {
@@ -152,7 +150,7 @@ public class Message implements Comparable<Message> {
     }
 
     public int hashCode() {
-        return Objects.hash(topic, type, controlParameters, body);
+        return hash(topic, type, controlParameters, body);
     }
 
     public static class MessageBody {
@@ -185,7 +183,7 @@ public class Message implements Comparable<Message> {
 
         @Override
         public int hashCode() {
-            return Objects.hash(payload);
+            return hash(payload);
         }
     }
 
@@ -229,7 +227,7 @@ public class Message implements Comparable<Message> {
 
         @Override
         public int hashCode() {
-            return Objects.hash(parameter);
+            return hash(parameter);
         }
     }
 }
