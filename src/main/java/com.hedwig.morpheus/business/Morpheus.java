@@ -1,7 +1,6 @@
 package com.hedwig.morpheus.business;
 
 import com.hedwig.morpheus.configuration.EntryPoint;
-import com.hedwig.morpheus.domain.model.implementation.Module;
 import com.hedwig.morpheus.domain.model.interfaces.IMessageReceiver;
 import com.hedwig.morpheus.domain.model.interfaces.IServer;
 import com.hedwig.morpheus.service.interfaces.IMessageManager;
@@ -45,15 +44,6 @@ public class Morpheus {
     public void start() {
         if (!connectToServer()) return;
         messageReceiver.processQueue();
-
-        Module kitchen = new Module("1", "kitchen", "hw/kitchen1");
-        moduleManager.registerModule(kitchen);
-
-        Module room = new Module("1", "room", "hw/room");
-        moduleManager.registerModule(room);
-
-        Module livingRoom = new Module("1", "livingRoom", "hw/livingRoom1");
-        moduleManager.registerModule(livingRoom);
     }
 
     public void shutdown() {

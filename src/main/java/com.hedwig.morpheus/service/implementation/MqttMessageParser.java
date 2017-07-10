@@ -25,33 +25,61 @@ public class MqttMessageParser {
 
         List<String> messageParts = Arrays.asList(payload.split("\n"));
 
+        if (messageParts.size() <= 1) {
+            logger.error("Invalid message", new IllegalArgumentException("Message does not follow protocol"));
+            return null;
+        }
+
         String stringType = messageParts.get(0);
 
         Message.MessageType messageType = parseMessageType(stringType);
+
+        if(messageType == null) {
+            logger.error("Invalid message", new IllegalArgumentException("Message does not follow protocol"));
+            return null;
+        }
 
         List<Message.ControlParameter> controlParameters = new ArrayList<>();
 
         StringBuilder body = new StringBuilder();
 
+        byte atCharCount = 0;
+
         for (String eachLine : messageParts) {
             if (eachLine.startsWith("$")) {
                 controlParameters.add(parseControlParameter(eachLine));
-            } else if (!eachLine.startsWith("@") && !eachLine.startsWith("#")) {
+            } else if(eachLine.startsWith("@")) {
+                atCharCount++;
+            } else if (!eachLine.startsWith("#")) {
                 body.append(eachLine);
             }
+        }
+
+        if(atCharCount != 2) {
+            logger.error("Invalid message", new IllegalArgumentException("Message does not follow protocol"));
+            return null;
         }
 
         Message message = new Message(topic, messageType, new Message.MessageBody(body.toString()));
 
         controlParameters.stream().forEach(p -> message.addControlParameter(p));
 
-        logger.info(String.format("Message %d successfully parsed", message.getId()));
+        logger.info(String.format("Message %s successfully parsed", message.getId()));
 
         return message;
     }
 
     private static Message.MessageType parseMessageType(String messageType) {
-        String type = messageType.split("#")[1];
+        String[] typeArray = messageType.split("#");
+
+        if (typeArray.length < 2) {
+            logger.error(String.format("Message type %s does not exist", messageType),
+                         new IllegalArgumentException("Invalid message type"));
+            return null;
+        }
+
+        String type = typeArray[1];
+
         switch (type) {
             case "configuration":
                 return Message.MessageType.CONFIGURATION;
@@ -65,7 +93,8 @@ public class MqttMessageParser {
                 return Message.MessageType.DATA_REQUEST;
         }
 
-        logger.error(String.format("Message type %s does not exist", messageType), new IllegalStateException());
+        logger.error(String.format("Message type %s does not exist", messageType),
+                     new IllegalArgumentException("Invalid message type"));
 
         return null;
     }
@@ -74,7 +103,9 @@ public class MqttMessageParser {
         String[] controlArray = parameter.split("$|:");
 
         if (controlArray.length < 2) {
-            logger.error(String.format("Invalid control parameter %s", parameter), new IllegalStateException());
+            logger.error(String.format("Invalid control parameter %s", parameter),
+                         new IllegalArgumentException("Control parameter does not exist"));
+            return null;
         }
 
         return new Message.ControlParameter(controlArray[0], controlArray[1]);

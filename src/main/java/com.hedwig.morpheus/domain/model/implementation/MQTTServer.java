@@ -136,16 +136,11 @@ public class MQTTServer implements IServer {
                 // TODO : Make actual parsing of the message
                 receiversThreadPool.execute(() -> {
                     logger.info("New message received from module: " + topic);
-                    try {
-                        Thread.sleep(5000); // Remove when actual behavior is implemented
-                    } catch (InterruptedException e) {
-                        logger.error("Error in thread sleep", e);
-                    }
 
                     Message message = conversionService.convert(mqttMessage, Message.class);
 
                     if(null == message) {
-                        logger.error("Could not convert message", new IllegalStateException());
+                        logger.error("Could not convert message", new IllegalStateException("Invalid message"));
                         return;
                     }
 

@@ -1,28 +1,83 @@
 package com.hedwig.morpheus.domain.model.implementation;
 
+import com.hedwig.morpheus.domain.model.enums.QualityOfService;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Objects;
 
 /**
  * Created by hugo. All rights reserved.
  */
+@Entity
+@Table(name = "Module")
 public class Module {
+
     private static final String S_2_M = "s2m";
     private static final String M_2_S = "m2s";
 
-    private String id;
+    @Id
+    private Long id;
     private String name;
     private String topic;
+    private QualityOfService qualityOfService;
+    private int receiveMessagesAtMostEvery;
 
     public Module() {
     }
 
-    public Module(String id, String name, String topic) {
+    public Module(Long id, String name, String topic) {
         this.id = id;
         this.name = name;
         this.topic = topic;
+
+        this.qualityOfService = QualityOfService.FIRST_LEVEL;
+        this.receiveMessagesAtMostEvery = 60;
+
     }
 
-    public String getId() {
+    public int getReceiveMessagesAtMostEvery() {
+        return receiveMessagesAtMostEvery;
+    }
+
+    public void setReceiveMessagesAtMostEvery(int receiveMessagesAtMostEvery) {
+        this.receiveMessagesAtMostEvery = receiveMessagesAtMostEvery;
+    }
+
+    public void configureReceiveMessagesAtMostEvery(String timeString) {
+        String[] timeParts = timeString.split(":");
+
+        if (timeParts.length < 2) return;
+
+        int parsedTime;
+
+        try {
+            parsedTime = Integer.valueOf(timeParts[0]);
+        } catch (NumberFormatException e) {
+            return;
+        }
+
+        switch (timeParts[1]) {
+            case "h":
+                setReceiveMessagesAtMostEvery(parsedTime * 3600);
+                break;
+            case "m":
+                setReceiveMessagesAtMostEvery(parsedTime * 60);
+            default:
+                setReceiveMessagesAtMostEvery(parsedTime);
+        }
+    }
+
+    public QualityOfService getQualityOfService() {
+        return qualityOfService;
+    }
+
+    public void setQualityOfService(QualityOfService qualityOfService) {
+        this.qualityOfService = qualityOfService;
+    }
+
+    public Long getId() {
         return id;
     }
 

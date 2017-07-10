@@ -1,8 +1,8 @@
 package com.hedwig.morpheus.service.implementation;
 
+import com.hedwig.morpheus.domain.model.implementation.Module;
 import com.hedwig.morpheus.service.interfaces.IModuleManager;
 import com.hedwig.morpheus.service.interfaces.ITopicManager;
-import com.hedwig.morpheus.domain.model.implementation.Module;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -20,6 +20,7 @@ public class ModuleManager implements IModuleManager {
     private final List modules;
 
     private final ITopicManager topicManager;
+    //private final ModuleRepository moduleRepository;
 
     @Autowired
     public ModuleManager(ITopicManager topicManager) {
@@ -33,6 +34,8 @@ public class ModuleManager implements IModuleManager {
 
         modules.add(module);
         topicManager.subscribe(module.getSubscribeToTopic());
+        //moduleRepository.save(module);
+
         return true;
     }
 
@@ -45,6 +48,7 @@ public class ModuleManager implements IModuleManager {
             Module module = iterator.next();
             if (id.equals(module.getId())) {
                 topicManager.unsubscribe(module.getSubscribeToTopic());
+                //moduleRepository.delete(module.getId());
                 iterator.remove();
                 return true;
             }

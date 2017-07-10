@@ -1,5 +1,7 @@
 package com.hedwig.morpheus.domain.model.implementation;
 
+import com.hedwig.morpheus.domain.model.enums.QualityOfService;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -32,7 +34,7 @@ public class Message implements Comparable<Message> {
     }
 
     private void createId() {
-        int hashValue = Objects.hash(type, body, topic);
+        int hashValue = Math.abs(Objects.hash(type, body, topic));
 
         id = String.format("%d%d", hashValue, System.currentTimeMillis());
     }
@@ -137,20 +139,6 @@ public class Message implements Comparable<Message> {
 
     public enum MessagePriority {
         HIGH, NORMAL, LOW;
-    }
-
-    public enum QualityOfService {
-        FIRST_LEVEL(1), SECOND_LEVEL(2), THIRD_LEVEL(3);
-
-        private final int qosLevel;
-
-        QualityOfService(int qosLevel) {
-            this.qosLevel = qosLevel;
-        }
-
-        public int getQosLevel() {
-            return qosLevel;
-        }
     }
 
     public static class MessageBody {

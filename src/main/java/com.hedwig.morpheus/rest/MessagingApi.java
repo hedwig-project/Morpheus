@@ -1,6 +1,8 @@
 package com.hedwig.morpheus.rest;
 
 import com.hedwig.morpheus.rest.model.MessageDto;
+import com.hedwig.morpheus.rest.model.configuration.ConfigurationDto;
+import com.hedwig.morpheus.rest.service.RestConfigurationHandler;
 import com.hedwig.morpheus.rest.service.RestMessageHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,11 +24,13 @@ public class MessagingApi {
     @Autowired
     RestMessageHandler messageHandler;
 
-    @RequestMapping(path = EndpointAddresses.CONFIGURATION, method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<String> configurationMessage(@RequestBody MessageDto message) {
+    @Autowired
+    RestConfigurationHandler configurationHandler;
 
-        message.setMessageType("configuration");
-        messageHandler.inputMessage(message);
+    @RequestMapping(path = EndpointAddresses.CONFIGURATION, method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<String> configurationMessage(@RequestBody ConfigurationDto configuration) {
+
+        configurationHandler.inputNewConfiguration(configuration);
 
         return new ResponseEntity<>("configuration message received", HttpStatus.OK);
     }
