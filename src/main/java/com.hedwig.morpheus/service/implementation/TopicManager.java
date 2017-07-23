@@ -53,8 +53,13 @@ public class TopicManager implements ITopicManager {
         if(!subscribedTopics.contains(topic))
             return false;
 
-        subscribedTopics.remove(topic);
-        return server.unsubscribe(topic);
+        if(server.unsubscribe(topic)) {
+            return subscribedTopics.remove(topic);
+        } else {
+            logger.error(String.format("Failure when unsubscribing from topic %s", topic));
+        }
+
+        return false;
     }
 
     @Override

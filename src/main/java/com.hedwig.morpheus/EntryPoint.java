@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.configuration;
+package com.hedwig.morpheus;
 
 import com.hedwig.morpheus.business.Morpheus;
 import com.hedwig.morpheus.domain.model.implementation.MessageQueue;
@@ -8,7 +8,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -16,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
  */
 
 @SpringBootApplication
-@ComponentScan("com.hedwig.morpheus")
 @Configuration
 public class EntryPoint implements ApplicationRunner {
 

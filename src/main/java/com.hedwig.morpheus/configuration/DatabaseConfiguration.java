@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 /**
  * Created by hugo. All rights reserved.
  */
-@EnableJpaRepositories("com.hedwig.morpheus.domain.repository")
+@EnableJpaRepositories("com.hedwig.morpheus.repository")
 @EnableTransactionManagement
 public class DatabaseConfiguration {
 

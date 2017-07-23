@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "Module")
-public class Module {
+public class    Module {
 
     private static final String S_2_M = "s2m";
     private static final String M_2_S = "m2s";

@@ -1,6 +1,7 @@
 package com.hedwig.morpheus.service.implementation;
 
 import com.hedwig.morpheus.domain.model.implementation.Module;
+import com.hedwig.morpheus.repository.ModuleRepository;
 import com.hedwig.morpheus.service.interfaces.IModuleManager;
 import com.hedwig.morpheus.service.interfaces.ITopicManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +21,13 @@ public class ModuleManager implements IModuleManager {
     private final List modules;
 
     private final ITopicManager topicManager;
-    //private final ModuleRepository moduleRepository;
+    private final ModuleRepository moduleRepository;
 
     @Autowired
-    public ModuleManager(ITopicManager topicManager) {
+    public ModuleManager(ITopicManager topicManager, ModuleRepository moduleRepository) {
         this.modules = new ArrayList<>();
         this.topicManager = topicManager;
+        this.moduleRepository = moduleRepository;
     }
 
     @Override
@@ -34,8 +36,7 @@ public class ModuleManager implements IModuleManager {
 
         modules.add(module);
         topicManager.subscribe(module.getSubscribeToTopic());
-        //moduleRepository.save(module);
-
+        moduleRepository.save(module);
         return true;
     }
 
@@ -48,9 +49,28 @@ public class ModuleManager implements IModuleManager {
             Module module = iterator.next();
             if (id.equals(module.getId())) {
                 topicManager.unsubscribe(module.getSubscribeToTopic());
-                //moduleRepository.delete(module.getId());
+                moduleRepository.delete(module.getId());
                 iterator.remove();
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean removeModuleByTopic(String topic) {
+        if (topic == null) return false;
+
+        Iterator<Module> iterator = modules.iterator();
+        while (iterator.hasNext()) {
+            Module module = iterator.next();
+            if (topic.equals(module.getTopic())) {
+                if(topicManager.unsubscribe(module.getSubscribeToTopic())) {
+                    moduleRepository.delete(module.getId());
+                    iterator.remove();
+                    return true;
+                }
             }
         }
 

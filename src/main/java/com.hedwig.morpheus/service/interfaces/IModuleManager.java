@@ -10,5 +10,7 @@ public interface IModuleManager {
 
     boolean removeModuleById(String id);
 
+    boolean removeModuleByTopic(String topic);
+
     boolean containsModule(Module module);
 }

@@ -1,5 +1,6 @@
 package com.hedwig.service;
 
+import com.hedwig.morpheus.EntryPoint;
 import com.hedwig.morpheus.domain.model.implementation.MQTTServer;
 import com.hedwig.morpheus.service.implementation.TopicManager;
 import org.junit.Before;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertTrue;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = com.hedwig.morpheus.configuration.EntryPoint.class)
+@SpringBootTest(classes = EntryPoint.class)
 public class TopicManagerTest {
 
     @Mock

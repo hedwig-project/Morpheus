@@ -3,6 +3,7 @@ package com.hedwig.morpheus.rest.service;
 import com.hedwig.morpheus.domain.model.enums.QualityOfService;
 import com.hedwig.morpheus.domain.model.implementation.Module;
 import com.hedwig.morpheus.rest.model.configuration.ConfigurationDto;
+import com.hedwig.morpheus.rest.model.configuration.ModuleConfigurationDto;
 import com.hedwig.morpheus.rest.model.configuration.MorpheusConfigurationDto;
 import com.hedwig.morpheus.rest.model.configuration.RegistrationDto;
 import com.hedwig.morpheus.service.interfaces.IModuleManager;
@@ -38,17 +39,52 @@ public class RestConfigurationHandler {
         }
 
         makeMorpheusConfiguration(configuration.getMorpheusConfiguration());
+        makeModulesConfiguration(configuration.getModulesConfiguration());
+    }
+
+    private void makeModulesConfiguration(List<ModuleConfigurationDto> modulesConfiguration) {
+        if(null == modulesConfiguration) {
+            return;
+        }
+
+        for(ModuleConfigurationDto eachModuleConfiguration : modulesConfiguration) {
+            configureEachModule(eachModuleConfiguration);
+        }
+    }
+
+    private void configureEachModule(ModuleConfigurationDto moduleConfiguration) {
+        if(null == moduleConfiguration) {
+            return;
+        }
+
+        Long moduleId = moduleConfiguration.getModuleId();
+        String moduleName = moduleConfiguration.getModuleName();
+        String moduleTopic = moduleConfiguration.getModuleTopic();
+
+        if(null == moduleId || null == moduleName || null == moduleTopic) {
+            logger.warn("Module information is not complete");
+            return;
+        }
+
+        Boolean unregister = moduleConfiguration.getUnregister();
+        if(unregister != null && unregister) {
+            boolean removed = moduleManager.removeModuleByTopic(moduleTopic);
+            if(removed) {
+                logger.info(String.format("Module %s removed successfully", moduleName));
+            } else {
+                logger.info(String.format("Not possible to remove module %s", moduleName));
+            }
+        }
     }
 
     private void makeMorpheusConfiguration(MorpheusConfigurationDto morpheusConfiguration) {
         if (null == morpheusConfiguration) {
-            logger.info("Empty morpheusConfiguration message");
+            return;
         }
 
         logger.info("Configuring Morpheus");
 
         makeModuleRegistrations(morpheusConfiguration.getRegister());
-
     }
 
     private void makeModuleRegistrations(List<RegistrationDto> register) {

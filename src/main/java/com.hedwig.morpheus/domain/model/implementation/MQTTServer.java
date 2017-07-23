@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.net.ssl.SSLSocketFactory;
 import java.nio.file.Path;
@@ -233,9 +232,16 @@ public class MQTTServer implements IServer {
         }
     }
 
-    // TODO : Implement unsubscription
     @Override
     public boolean unsubscribe(String topic) {
-        throw new NotImplementedException();
+        try {
+            IMqttToken token = mqttAsyncClient.unsubscribe(topic);
+            token.waitForCompletion();
+            return token.getResponse().toString().equals("UNSUBACK msgId 4");
+        } catch (MqttException e) {
+            logger.error("Error in subscription", e);
+        }
+
+        return false;
     }
 }

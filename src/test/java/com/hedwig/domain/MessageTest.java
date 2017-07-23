@@ -1,5 +1,6 @@
 package com.hedwig.domain;
 
+import com.hedwig.morpheus.EntryPoint;
 import com.hedwig.morpheus.domain.model.implementation.Message;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertEquals;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = com.hedwig.morpheus.configuration.EntryPoint.class)
+@SpringBootTest(classes = EntryPoint.class)
 public class MessageTest {
     @Test
     public void payloadConfigurationMessage() {
