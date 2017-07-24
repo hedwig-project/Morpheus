@@ -6,11 +6,15 @@ import com.hedwig.morpheus.domain.model.implementation.Module;
  * Created by hugo. All rights reserved.
  */
 public interface IModuleManager {
-    boolean registerModule(Module module);
+    Module getModuleByTopic(String topic);
+
+    void registerModule(Module module);
 
     boolean removeModuleById(String id);
 
     boolean removeModuleByTopic(String topic);
+
+    boolean containsModuleByTopic(String topic);
 
     boolean containsModule(Module module);
 }

@@ -30,7 +30,7 @@ public class TopicManager implements ITopicManager {
     }
 
     @Override
-    public void subscribe(String topic) {
+    public void subscribe(String topic, String moduleName, Runnable successfullyRegistered) {
         if (subscribedTopics.contains(topic)) {
             logger.info(String.format("Topic %s is already in subscription list", topic));
             return;
@@ -38,7 +38,13 @@ public class TopicManager implements ITopicManager {
 
         Runnable successfullySubscribed = () -> {
             subscribedTopics.add(topic);
+
+            if(successfullyRegistered != null) {
+                successfullyRegistered.run();
+            }
+
             logger.info(String.format("Successfully subscribed to topic %s", topic));
+            logger.info(String.format("Module %s registered", moduleName));
         };
 
         Runnable failureInSubscription = () -> {

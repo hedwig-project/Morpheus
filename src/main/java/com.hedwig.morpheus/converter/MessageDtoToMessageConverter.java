@@ -19,7 +19,7 @@ public class MessageDtoToMessageConverter implements Converter<MessageDto, Messa
 
         Message message = new Message(source.getTopic(), type, body);
 
-        List<ControlParameterDto> controlParameterDtoList = source.getControlParameterDtoList();
+        List<ControlParameterDto> controlParameterDtoList = source.getControlParameters();
 
         if(controlParameterDtoList == null) return message;
 

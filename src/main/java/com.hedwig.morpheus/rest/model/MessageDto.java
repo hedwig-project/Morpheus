@@ -13,27 +13,27 @@ public class MessageDto {
 
     private String messageType;
 
-    private List<ControlParameterDto> controlParameterDtoList;
+    private List<ControlParameterDto> controlParameters;
 
     public MessageDto(String payload,
                       String topic,
                       String messageType,
-                      List<ControlParameterDto> controlParameterDtoList) {
+                      List<ControlParameterDto> controlParameters) {
         this.payload = payload;
         this.topic = topic;
         this.messageType = messageType;
-        this.controlParameterDtoList = controlParameterDtoList;
+        this.controlParameters = controlParameters;
     }
 
     public MessageDto() {
     }
 
-    public List<ControlParameterDto> getControlParameterDtoList() {
-        return controlParameterDtoList;
+    public List<ControlParameterDto> getControlParameters() {
+        return controlParameters;
     }
 
-    public void setControlParameterDtoList(List<ControlParameterDto> controlParameterDtoList) {
-        this.controlParameterDtoList = controlParameterDtoList;
+    public void setControlParameters(List<ControlParameterDto> controlParameters) {
+        this.controlParameters = controlParameters;
     }
 
     public String getTopic() {

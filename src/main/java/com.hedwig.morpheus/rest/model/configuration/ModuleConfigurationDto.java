@@ -1,5 +1,9 @@
 package com.hedwig.morpheus.rest.model.configuration;
 
+import com.hedwig.morpheus.rest.model.MessageDto;
+
+import java.util.List;
+
 /**
  * Created by hugo. All rights reserved.
  */
@@ -8,7 +12,7 @@ public class ModuleConfigurationDto {
     private String moduleName;
     private String moduleTopic;
     private Boolean unregister;
-    private String newName;
+    private List<MessageDto> messages;
 
     public ModuleConfigurationDto() {
     }
@@ -17,12 +21,12 @@ public class ModuleConfigurationDto {
                                   String moduleName,
                                   String moduleTopic,
                                   Boolean unregister,
-                                  String newName) {
+                                  List<MessageDto> messages) {
         this.moduleId = moduleId;
         this.moduleName = moduleName;
         this.moduleTopic = moduleTopic;
         this.unregister = unregister;
-        this.newName = newName;
+        this.messages = messages;
     }
 
     public Long getModuleId() {
@@ -57,11 +61,11 @@ public class ModuleConfigurationDto {
         this.unregister = unregister;
     }
 
-    public String getNewName() {
-        return newName;
+    public List<MessageDto> getMessages() {
+        return messages;
     }
 
-    public void setNewName(String newName) {
-        this.newName = newName;
+    public void setMessages(List<MessageDto> messages) {
+        this.messages = messages;
     }
 }

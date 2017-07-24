@@ -4,6 +4,8 @@ import com.hedwig.morpheus.domain.model.implementation.Module;
 import com.hedwig.morpheus.repository.ModuleRepository;
 import com.hedwig.morpheus.service.interfaces.IModuleManager;
 import com.hedwig.morpheus.service.interfaces.ITopicManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by hugo. All rights reserved.
@@ -18,10 +21,12 @@ import java.util.List;
 @Component
 @Scope("singleton")
 public class ModuleManager implements IModuleManager {
-    private final List modules;
+    private final List<Module> modules;
 
     private final ITopicManager topicManager;
     private final ModuleRepository moduleRepository;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public ModuleManager(ITopicManager topicManager, ModuleRepository moduleRepository) {
@@ -31,13 +36,21 @@ public class ModuleManager implements IModuleManager {
     }
 
     @Override
-    public boolean registerModule(Module module) {
-        if (modules.contains(module)) return false;
+    public Module getModuleByTopic(String topic) {
+        Optional<Module> module = modules.stream().filter(m -> m.getTopic().equals(topic)).findFirst();
+
+        return module.orElse(null);
+    }
+
+    @Override
+    public void registerModule(Module module) {
+        if (modules.contains(module)) {
+            logger.info(String.format("Module %s already registered", module.getName()));
+            return;
+        }
 
         modules.add(module);
-        topicManager.subscribe(module.getSubscribeToTopic());
-        moduleRepository.save(module);
-        return true;
+        topicManager.subscribe(module.getSubscribeToTopic(), module.getName(), () -> moduleRepository.save(module));
     }
 
     @Override
@@ -66,7 +79,7 @@ public class ModuleManager implements IModuleManager {
         while (iterator.hasNext()) {
             Module module = iterator.next();
             if (topic.equals(module.getTopic())) {
-                if(topicManager.unsubscribe(module.getSubscribeToTopic())) {
+                if (topicManager.unsubscribe(module.getSubscribeToTopic())) {
                     moduleRepository.delete(module.getId());
                     iterator.remove();
                     return true;
@@ -75,6 +88,11 @@ public class ModuleManager implements IModuleManager {
         }
 
         return false;
+    }
+
+    @Override
+    public boolean containsModuleByTopic(String topic) {
+        return modules.stream().anyMatch(m -> m.getTopic().equals(topic));
     }
 
     @Override

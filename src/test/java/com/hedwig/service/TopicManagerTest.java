@@ -45,7 +45,7 @@ public class TopicManagerTest {
     @Test
     public void subscribeToTopic() {
         String topic = "hw/kitchen/s2m";
-        topicManager.subscribe(topic);
+        topicManager.subscribe(topic, "kitchen", null);
 
         assertTrue(topicManager.isSubscribed(topic));
     }
@@ -59,7 +59,7 @@ public class TopicManagerTest {
     @Test
     public void unsubscribeFromTopic() {
         String topic = "hw/kitchen/s2m";
-        topicManager.subscribe(topic);
+        topicManager.subscribe(topic, "kitchen", null);
 
         assertTrue(topicManager.isSubscribed(topic));
 
