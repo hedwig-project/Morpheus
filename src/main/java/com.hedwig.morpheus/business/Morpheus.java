@@ -10,8 +10,12 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by hugo on 21/05/17. All rights reserved.
@@ -28,6 +32,11 @@ public class Morpheus {
 
     private final Logger logger = LoggerFactory.getLogger(EntryPoint.class);
 
+    private final Timer scheduler;
+
+    @Value("${morpheus.configuration.keepAlive}")
+    private int period;
+
     @Autowired
     public Morpheus(IMessageManager messageManager,
                     IModuleManager moduleManager,
@@ -39,16 +48,30 @@ public class Morpheus {
         this.topicManager = topicManager;
         this.server = server;
         this.messageReceiver = messageReceiver;
+
+        scheduler = new Timer();
     }
 
     public void start() {
         if (!connectToServer()) return;
         messageReceiver.processQueue();
+
+        startKeepAlive();
+    }
+
+    private void startKeepAlive() {
+        scheduler.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                // TODO : Send message to cloud
+            }
+        }, 0, period);
     }
 
     public void shutdown() {
         logger.info("Shutting down Morpheus");
         server.shutdown();
+        scheduler.cancel();
     }
 
     private boolean connectToServer() {

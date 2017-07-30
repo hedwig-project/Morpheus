@@ -25,6 +25,8 @@ public class MessageReceiver implements IMessageReceiver {
 
     private final MessageQueue incomeMessageQueue;
 
+    private final Cloud cloud;
+
     private final ExecutorService threadPool = Executors.newFixedThreadPool(MAX_POOL_SIZE, new ThreadFactory() {
         private AtomicInteger atomicCounter = new AtomicInteger(1);
 
@@ -38,19 +40,38 @@ public class MessageReceiver implements IMessageReceiver {
     });
 
     @Autowired
-    public MessageReceiver(@Qualifier("incomeMessageQueue") MessageQueue incomeMessageQueue) {
+    public MessageReceiver(@Qualifier("incomeMessageQueue") MessageQueue incomeMessageQueue, Cloud cloud) {
         this.incomeMessageQueue = incomeMessageQueue;
+        this.cloud = cloud;
     }
 
     @Override
     public void processIncomeMessage(Message message) {
-        try {
-            logger.info(String.format("Starting message processing for %s", message.getId()));
-            Thread.sleep(5000);
-            logger.info(String.format("Message %s successfully processed", message.getId()));
-        } catch (InterruptedException e) {
-            logger.error(String.format("Error processing message %s", message.getId()), e);
+//        try {
+//            logger.info(String.format("Starting message processing for %s", message.getId()));
+//            Thread.sleep(5000);
+//            logger.info(String.format("Message %s successfully processed", message.getId()));
+//        } catch (InterruptedException e) {
+//            logger.error(String.format("Error processing message %s", message.getId()), e);
+//        }
+
+
+        switch (message.getType()) {
+            case CONFIRMATION:
+                cloud.sendConfirmationMessage(message);
+                break;
+            case DATA_TRANSMISSION:
+                cloud.sendDataTransmissionMessage(message);
+                break;
+            case DATA_REQUEST:
+                cloud.sendDataRequestMessage(message);
+                break;
+            default:
+                logger.warn("Invalid message from module");
+                return;
         }
+
+        logger.info("Message processed successfully");
     }
 
     @Override

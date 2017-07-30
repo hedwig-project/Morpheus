@@ -20,3 +20,8 @@ mqttServer:
     id: morpheus-localServer
     name: localhost
     port: 8883
+
+morpheus:
+  configuration:
+    keepAlive: 10
+    serialNumber: adf654wae84fea5d8ea6

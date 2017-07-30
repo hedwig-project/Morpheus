@@ -27,6 +27,7 @@ public class RestConfigurationHandler {
 
     private final IModuleManager moduleManager;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Autowired
     RestMessageHandler messageHandler;
 

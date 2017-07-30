@@ -96,6 +96,10 @@ public class Message implements Comparable<Message> {
         return controlParameters.stream().map(ControlParameter::toString).collect(Collectors.joining());
     }
 
+    public MessageType getType() {
+        return type;
+    }
+
     public String toString() {
         return String.format("%s%s%s", type.toString(), getControlParametersSection(), body.toString());
     }
