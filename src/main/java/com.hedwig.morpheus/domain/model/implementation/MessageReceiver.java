@@ -47,15 +47,6 @@ public class MessageReceiver implements IMessageReceiver {
 
     @Override
     public void processIncomeMessage(Message message) {
-//        try {
-//            logger.info(String.format("Starting message processing for %s", message.getId()));
-//            Thread.sleep(5000);
-//            logger.info(String.format("Message %s successfully processed", message.getId()));
-//        } catch (InterruptedException e) {
-//            logger.error(String.format("Error processing message %s", message.getId()), e);
-//        }
-
-
         switch (message.getType()) {
             case CONFIRMATION:
                 cloud.sendConfirmationMessage(message);
@@ -63,8 +54,8 @@ public class MessageReceiver implements IMessageReceiver {
             case DATA_TRANSMISSION:
                 cloud.sendDataTransmissionMessage(message);
                 break;
-            case DATA_REQUEST:
-                cloud.sendDataRequestMessage(message);
+            case CONFIGURATION:
+                cloud.sendConfigurationMessage(message);
                 break;
             default:
                 logger.warn("Invalid message from module");

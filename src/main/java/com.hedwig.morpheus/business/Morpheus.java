@@ -40,20 +40,13 @@ public class Morpheus {
     private final Timer scheduler;
 
     @Value("${api.host}")
-    private String ApiHost;
+    private String apiHost;
 
     @Value("${api.port}")
-    private String ApiPort;
-
-    @Value("${api.endpoint.configuration}")
-    private String ApiConfiguration;
+    private String apiPort;
 
     @Value("${api.endpoint.confirmation}")
-    private String ApiConfirmation;
-
-    @Value("${api.endpoint.data_transmission}")
-    private String ApiDataTransmission;
-
+    private String apiConfirmation;
 
     @Value("${morpheus.configuration.keepAlive}")
     private int period;
@@ -84,7 +77,7 @@ public class Morpheus {
         scheduler.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                String urlString = String.format("http://%s:%s/%s", ApiHost, ApiPort, ApiConfirmation);
+                String urlString = String.format("http://%s:%s/%s", apiHost, apiPort, apiConfirmation);
                 URL url;
                 try {
                     url = new URL(urlString);
