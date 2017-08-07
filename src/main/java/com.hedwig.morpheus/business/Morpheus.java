@@ -14,6 +14,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,6 +38,22 @@ public class Morpheus {
     private final Logger logger = LoggerFactory.getLogger(EntryPoint.class);
 
     private final Timer scheduler;
+
+    @Value("${api.host}")
+    private String ApiHost;
+
+    @Value("${api.port}")
+    private String ApiPort;
+
+    @Value("${api.endpoint.configuration}")
+    private String ApiConfiguration;
+
+    @Value("${api.endpoint.confirmation}")
+    private String ApiConfirmation;
+
+    @Value("${api.endpoint.data_transmission}")
+    private String ApiDataTransmission;
+
 
     @Value("${morpheus.configuration.keepAlive}")
     private int period;
@@ -63,7 +84,38 @@ public class Morpheus {
         scheduler.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                // TODO : Send message to cloud
+                String urlString = String.format("http://%s:%s/%s", ApiHost, ApiPort, ApiConfirmation);
+                URL url;
+                try {
+                    url = new URL(urlString);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+
+                    DataOutputStream write = new DataOutputStream(connection.getOutputStream());
+
+                    write.writeBytes("Keep Alive");
+                    write.flush();
+                    write.close();
+
+                    int responseCode = connection.getResponseCode();
+
+                    switch (responseCode) {
+                        case 200:
+                            logger.info("Keep alive message sent successfully");
+                            break;
+                        default:
+                            logger.error(String.format("Keep alive request returned with code %d", responseCode));
+                    }
+
+                } catch (MalformedURLException e) {
+                    logger.error("Malformed connection URL", e);
+                } catch (IOException e) {
+                    logger.error("Could not send keep alive message to host", e);
+                }
+
+
             }
         }, 0, period);
     }

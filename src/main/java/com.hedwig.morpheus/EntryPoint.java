@@ -27,6 +27,7 @@ public class EntryPoint implements ApplicationRunner {
         Morpheus morpheus = context.getBean(Morpheus.class);
         morpheus.start();
 
+
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if(morpheus != null) {
                 morpheus.shutdown();
