@@ -1,5 +1,7 @@
-package com.hedwig.morpheus.domain.model.implementation;
+package com.hedwig.morpheus.business;
 
+import com.hedwig.morpheus.domain.model.implementation.Message;
+import com.hedwig.morpheus.domain.model.implementation.MessageQueue;
 import com.hedwig.morpheus.domain.model.interfaces.IServer;
 import com.hedwig.morpheus.security.Securities;
 import org.eclipse.paho.client.mqttv3.*;

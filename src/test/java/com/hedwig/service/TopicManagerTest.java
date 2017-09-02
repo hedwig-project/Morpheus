@@ -1,7 +1,7 @@
 package com.hedwig.service;
 
 import com.hedwig.morpheus.EntryPoint;
-import com.hedwig.morpheus.domain.model.implementation.MQTTServer;
+import com.hedwig.morpheus.business.MQTTServer;
 import com.hedwig.morpheus.service.implementation.TopicManager;
 import org.junit.Before;
 import org.junit.Test;
