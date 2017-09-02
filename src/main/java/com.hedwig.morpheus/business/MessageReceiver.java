@@ -1,6 +1,5 @@
 package com.hedwig.morpheus.business;
 
-import com.hedwig.morpheus.domain.model.implementation.Cloud;
 import com.hedwig.morpheus.domain.model.implementation.Message;
 import com.hedwig.morpheus.domain.model.implementation.MessageQueue;
 import com.hedwig.morpheus.domain.model.interfaces.IMessageReceiver;

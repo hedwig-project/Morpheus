@@ -2,9 +2,9 @@ package com.hedwig.morpheus.rest;
 
 import com.hedwig.morpheus.rest.model.MessageDto;
 import com.hedwig.morpheus.rest.model.configuration.ConfigurationDto;
-import com.hedwig.morpheus.rest.service.RestMessageRequestsHandlers;
 import com.hedwig.morpheus.rest.service.RestConfigurationHandler;
 import com.hedwig.morpheus.rest.service.RestMessageHandler;
+import com.hedwig.morpheus.rest.service.RestMessageRequestsHandlers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

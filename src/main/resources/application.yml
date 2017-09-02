@@ -23,7 +23,7 @@ mqttServer:
 
 morpheus:
   configuration:
-    keepAlive: 600000
+    keepAlive: 10000
     serialNumber: adf654wae84fea5d8ea6
 
 api:

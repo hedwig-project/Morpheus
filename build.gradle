@@ -39,6 +39,9 @@ dependencies {
     // Spring Boot Web Starter
     compile('org.springframework.boot:spring-boot-starter-web')
 
+    // SocketIo
+    compile ('io.socket:socket.io-client:0.8.3')
+
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.8.9'
 
