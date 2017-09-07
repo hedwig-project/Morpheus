@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -28,21 +29,34 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Scope("singleton")
 public class MorpheusWebSocket {
 
-    static {
-
-    }
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final AtomicBoolean connectedToCloud;
     private final Socket socketIO;
     private final List<DisconnectionListener> disconnectionListeners;
-    // TODO : These should come from the yaml configuration
-    private final String url = "http://ec2-54-232-254-163.sa-east-1.compute.amazonaws.com:9090";
-    private final String morpheusId = "morpheusId-201709";
     private final IMessageHandler messageHandler;
+    private final String url;
+
+    private final String protocol;
+    private final String host;
+    private final String port;
+    private final String morpheusSerialNumber;
+
 
     @Autowired
-    public MorpheusWebSocket(IMessageHandler messageHandler) throws URISyntaxException {
+    public MorpheusWebSocket(Environment environment, IMessageHandler messageHandler) throws URISyntaxException {
+        protocol = environment.getProperty("cloud.protocol");
+        host = environment.getProperty("cloud.host");
+        port = environment.getProperty("cloud.port");
+        morpheusSerialNumber = environment.getProperty("morpheus.configuration.serialNumber");
+
+        assert null != protocol : "Protocol not found in configuration";
+        assert null != host : "Host not found in configuration";
+        assert null != port : "Port not found in configuration";
+        assert null != morpheusSerialNumber : "Serial number not found in configuration";
+
+        url = String.format("%s://%s:%s", protocol, host, port);
+        logger.info("Cloud URL: " + url);
+
         this.messageHandler = messageHandler;
 
         IO.Options socketOptions = new IO.Options();
@@ -134,8 +148,6 @@ public class MorpheusWebSocket {
 //    }
 
     public void sendConfirmationMessage(Message message) {
-//        socketIO.send(message);
-
 //        TODO : Serialize and get message type
         socketIO.emit("confirmation", message);
     }

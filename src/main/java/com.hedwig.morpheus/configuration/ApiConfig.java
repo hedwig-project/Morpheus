@@ -4,6 +4,7 @@ import com.hedwig.morpheus.converter.MessageDtoToMessageConverter;
 import com.hedwig.morpheus.converter.MqttMessageToMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ConversionServiceFactoryBean;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
@@ -16,6 +17,7 @@ import java.util.Set;
  */
 
 @Configuration
+@PropertySource("classpath:/application.yml")
 public class ApiConfig {
 
     public Set<Converter> getConverters() {
