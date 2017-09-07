@@ -33,6 +33,8 @@ public class Message implements Comparable<Message> {
         createId();
     }
 
+//    TODO : Use ID generator instead of this one. And it should not be created here
+
     private void createId() {
         int hashValue = Math.abs(Objects.hash(type, body, topic));
 

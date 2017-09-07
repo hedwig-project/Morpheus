@@ -1,5 +1,6 @@
 package com.hedwig.morpheus.service.implementation;
 
+import com.hedwig.morpheus.domain.implementation.Result;
 import com.hedwig.morpheus.domain.interfaces.IServer;
 import com.hedwig.morpheus.service.interfaces.ITopicManager;
 import org.slf4j.Logger;
@@ -22,50 +23,64 @@ public class TopicManager implements ITopicManager {
 
     private final List<String> subscribedTopics;
     private final IServer server;
+    private final ConfigurationReporter configurationReporter;
 
     @Autowired
-    public TopicManager(IServer server) {
+    public TopicManager(IServer server, ConfigurationReporter configurationReporter) {
         this.subscribedTopics = new LinkedList<>();
         this.server = server;
+        this.configurationReporter = configurationReporter;
     }
 
     @Override
-    public void subscribe(String topic, String moduleName, Runnable successfullyRegistered) {
+    public Result subscribe(String topic) {
+        Result result = new Result();
+
         if (subscribedTopics.contains(topic)) {
             logger.info(String.format("Topic %s is already in subscription list", topic));
-            return;
+            result.setSuccess(false);
+            result.setDescription(String.format("Topic %s is already in subscription list", topic));
+            return result;
         }
 
-        Runnable successfullySubscribed = () -> {
+        Result subscription = server.subscribe(topic);
+        if (subscription.isSuccess()) {
             subscribedTopics.add(topic);
-
-            if(successfullyRegistered != null) {
-                successfullyRegistered.run();
-            }
-
             logger.info(String.format("Successfully subscribed to topic %s", topic));
-            logger.info(String.format("Module %s registered", moduleName));
-        };
+            result.setSuccess(true);
+            result.setDescription(String.format("Successfully subscribed to topic %s", topic));
+            return result;
+        }
 
-        Runnable failureInSubscription = () -> {
-            logger.error(String.format("Failed to subscribe to topic %s", topic));
-        };
-
-        server.subscribe(topic, successfullySubscribed, failureInSubscription);
+        logger.error(String.format("Failed to subscribe to topic %s", topic));
+        result.setSuccess(false);
+        result.setDescription(subscription.getDescription());
+        return result;
     }
 
     @Override
-    public boolean unsubscribe(String topic) {
-        if(!subscribedTopics.contains(topic))
-            return false;
+    public Result unsubscribe(String topic) {
+        Result result = new Result();
 
-        if(server.unsubscribe(topic)) {
-            return subscribedTopics.remove(topic);
-        } else {
-            logger.error(String.format("Failure when unsubscribing from topic %s", topic));
+        if (!subscribedTopics.contains(topic)) {
+            result.setSuccess(false);
+            result.setDescription("Morpheus isn't subscribed to topic");
+            return result;
         }
 
-        return false;
+        Result unsubscribe = server.unsubscribe(topic);
+        if (unsubscribe.isSuccess()) {
+            subscribedTopics.remove(topic);
+            logger.info(String.format("Successfully unsubscribed from topic %s", topic));
+            result.setSuccess(true);
+            result.setDescription(String.format("Successfully unsubscribed from topic %s", topic));
+            return result;
+        }
+
+        logger.error(String.format("Failed to unsubscribe from topic %s", topic));
+        result.setSuccess(false);
+        result.setDescription(unsubscribe.getDescription());
+        return result;
     }
 
     @Override

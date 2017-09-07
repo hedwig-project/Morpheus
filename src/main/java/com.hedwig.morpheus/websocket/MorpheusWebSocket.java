@@ -1,8 +1,8 @@
 package com.hedwig.morpheus.websocket;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.hedwig.morpheus.domain.dto.ConfigurationDto;
 import com.hedwig.morpheus.domain.dto.MessageDto;
+import com.hedwig.morpheus.domain.dto.configuration.ConfigurationDto;
 import com.hedwig.morpheus.domain.implementation.Message;
 import com.hedwig.morpheus.util.json.JSONUtilities;
 import com.hedwig.morpheus.util.listener.DisconnectionListener;
@@ -79,7 +79,8 @@ public class MorpheusWebSocket {
             try {
                 logger.info("A new configuration message arrived");
                 ConfigurationDto configurationDto = JSONUtilities.deserialize((String) args[0], ConfigurationDto.class);
-                messageHandler.inputConfiguration(configurationDto);
+                String report = messageHandler.inputConfiguration(configurationDto);
+                sendConfirmationReport(report);
             } catch (IOException e) {
                 logger.error("Unable to deserialize configuration message", e);
             }
@@ -110,6 +111,11 @@ public class MorpheusWebSocket {
                 logger.error("Unable to deserialize dataTransmission message", e);
             }
         });
+    }
+
+    private void sendConfirmationReport(String report) {
+        socketIO.emit("confirmationReport", report);
+        logger.info("Configuration Report sent to cloud");
     }
 
     public void connect() throws URISyntaxException {
@@ -147,8 +153,9 @@ public class MorpheusWebSocket {
 //        }
 //    }
 
-    public void sendConfirmationMessage(Message message) {
+    public void sendMessage(Message message) {
 //        TODO : Serialize and get message type
-        socketIO.emit("confirmation", message);
+        socketIO.emit("confirmation", message); // has to have right message type
+        logger.info(String.format("Message %s sent to cloud", message.getId()));
     }
 }

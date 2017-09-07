@@ -50,7 +50,7 @@ public class Cloud {
     // TODO : Actually send messages to cloud
 
     public void sendMessageToCloud(Message message) {
-        morpheusWebSocket.sendConfirmationMessage(message);
+        morpheusWebSocket.sendMessage(message);
     }
 
 //    private void sendMessageToCloud(String urlString, String message, String logMessage) {

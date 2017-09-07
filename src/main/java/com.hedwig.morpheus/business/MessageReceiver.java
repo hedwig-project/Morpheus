@@ -57,6 +57,7 @@ public class MessageReceiver implements IMessageReceiver {
             case DATA_TRANSMISSION:
             case CONFIGURATION:
                 cloud.sendMessageToCloud(message);
+                break;
             default:
                 throw new IllegalArgumentException("Invalid message type");
         }

@@ -1,6 +1,7 @@
 package com.hedwig.morpheus.service.implementation;
 
 import com.hedwig.morpheus.domain.implementation.Module;
+import com.hedwig.morpheus.domain.implementation.Result;
 import com.hedwig.morpheus.repository.ModuleRepository;
 import com.hedwig.morpheus.service.interfaces.IModuleManager;
 import com.hedwig.morpheus.service.interfaces.ITopicManager;
@@ -25,14 +26,18 @@ public class ModuleManager implements IModuleManager {
 
     private final ITopicManager topicManager;
     private final ModuleRepository moduleRepository;
+    private final ConfigurationReporter configurationReporter;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    public ModuleManager(ITopicManager topicManager, ModuleRepository moduleRepository) {
+    public ModuleManager(ITopicManager topicManager,
+                         ModuleRepository moduleRepository,
+                         ConfigurationReporter configurationReporter) {
         this.modules = new ArrayList<>();
         this.topicManager = topicManager;
         this.moduleRepository = moduleRepository;
+        this.configurationReporter = configurationReporter;
     }
 
     @Override
@@ -43,51 +48,78 @@ public class ModuleManager implements IModuleManager {
     }
 
     @Override
-    public void registerModule(Module module) {
+    public Result registerModule(Module module) {
+        Result result = new Result();
+
         if (modules.contains(module)) {
             logger.info(String.format("Module %s already registered", module.getName()));
-            return;
+            result.setSuccess(false);
+            result.setDescription(String.format("Module %s already registered", module.getName()));
+            return result;
         }
 
-        modules.add(module);
-        topicManager.subscribe(module.getSubscribeToTopic(), module.getName(), () -> moduleRepository.save(module));
+        Result subscribedToTopic = topicManager.subscribe(module.getSubscribeToTopic());
+
+        if (subscribedToTopic.isSuccess()) {
+            logger.info(String.format("Module %s registered successfully", module.getName()));
+            modules.add(module);
+            result.setSuccess(true);
+            result.setDescription(String.format("Module %s registered successfully", module.getName()));
+            return result;
+        }
+
+        logger.error(String.format("Module %s failed to be registered", module.getName()));
+        result.setDescription(subscribedToTopic.getDescription());
+        return result;
     }
 
     @Override
-    public boolean removeModuleById(String id) {
-        if (id == null) return false;
+    public Result removeModuleById(String id) {
+        return removeModule(id, true);
+    }
+
+    @Override
+    public Result removeModuleByTopic(String topic) {
+        return removeModule(topic, false);
+    }
+
+    private Result removeModule(String key, boolean removeById) {
+        Result result = new Result();
+
+        if (null == key) {
+            result.setSuccess(false);
+            result.setDescription("No information about this module was provided");
+            return result;
+        }
 
         Iterator<Module> iterator = modules.iterator();
         while (iterator.hasNext()) {
             Module module = iterator.next();
-            if (id.equals(module.getId())) {
-                topicManager.unsubscribe(module.getSubscribeToTopic());
-                moduleRepository.delete(module.getId());
-                iterator.remove();
-                return true;
-            }
-        }
 
-        return false;
-    }
+            boolean found = removeById ? key.equals(module.getId()) : key.equals(module.getTopic());
 
-    @Override
-    public boolean removeModuleByTopic(String topic) {
-        if (topic == null) return false;
-
-        Iterator<Module> iterator = modules.iterator();
-        while (iterator.hasNext()) {
-            Module module = iterator.next();
-            if (topic.equals(module.getTopic())) {
-                if (topicManager.unsubscribe(module.getSubscribeToTopic())) {
+            if (found) {
+                Result unsubscribed = topicManager.unsubscribe(module.getSubscribeToTopic());
+                if (unsubscribed.isSuccess()) {
                     moduleRepository.delete(module.getId());
+                    logger.info(String.format("Module %s removed successfully", module.getName()));
                     iterator.remove();
-                    return true;
+                    result.setSuccess(true);
+                    result.setDescription(String.format("Module %s removed successfully", module.getName()));
+                    return result;
+                } else {
+                    logger.error(String.format("Module %s failed to be removed", module.getName()));
+                    result.setSuccess(false);
+                    result.setDescription(unsubscribed.getDescription());
+                    return result;
                 }
             }
         }
 
-        return false;
+        logger.info(String.format("Module %s not found", key));
+        result.setSuccess(false);
+        result.setDescription("Module not found");
+        return result;
     }
 
     @Override

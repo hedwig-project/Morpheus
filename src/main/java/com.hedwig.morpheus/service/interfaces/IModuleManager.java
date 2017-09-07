@@ -1,6 +1,7 @@
 package com.hedwig.morpheus.service.interfaces;
 
 import com.hedwig.morpheus.domain.implementation.Module;
+import com.hedwig.morpheus.domain.implementation.Result;
 
 /**
  * Created by hugo. All rights reserved.
@@ -8,11 +9,11 @@ import com.hedwig.morpheus.domain.implementation.Module;
 public interface IModuleManager {
     Module getModuleByTopic(String topic);
 
-    void registerModule(Module module);
+    Result registerModule(Module module);
 
-    boolean removeModuleById(String id);
+    Result removeModuleById(String id);
 
-    boolean removeModuleByTopic(String topic);
+    Result removeModuleByTopic(String topic);
 
     boolean containsModuleByTopic(String topic);
 

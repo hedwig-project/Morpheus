@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.domain.dto;
+package com.hedwig.morpheus.domain.dto.configuration;
 
 /**
  * Created by hugo. All rights reserved.
