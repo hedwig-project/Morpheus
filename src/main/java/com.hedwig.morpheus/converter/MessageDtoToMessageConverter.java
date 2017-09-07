@@ -1,8 +1,8 @@
 package com.hedwig.morpheus.converter;
 
-import com.hedwig.morpheus.domain.model.implementation.Message;
-import com.hedwig.morpheus.rest.model.ControlParameterDto;
-import com.hedwig.morpheus.rest.model.MessageDto;
+import com.hedwig.morpheus.domain.implementation.Message;
+import com.hedwig.morpheus.domain.dto.ControlParameterDto;
+import com.hedwig.morpheus.domain.dto.MessageDto;
 import org.springframework.core.convert.converter.Converter;
 
 import java.util.List;

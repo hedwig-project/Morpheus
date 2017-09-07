@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.domain.model.interfaces;
+package com.hedwig.morpheus.domain.interfaces;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 

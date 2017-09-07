@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.domain.model.implementation;
+package com.hedwig.morpheus.domain.implementation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

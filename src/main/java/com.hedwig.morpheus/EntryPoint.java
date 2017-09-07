@@ -1,7 +1,7 @@
 package com.hedwig.morpheus;
 
 import com.hedwig.morpheus.business.Morpheus;
-import com.hedwig.morpheus.domain.model.implementation.MessageQueue;
+import com.hedwig.morpheus.domain.implementation.MessageQueue;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;

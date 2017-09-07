@@ -1,8 +1,7 @@
 package com.hedwig.morpheus.service.implementation;
 
-import com.hedwig.morpheus.domain.model.interfaces.IMessageReceiver;
-import com.hedwig.morpheus.domain.model.interfaces.IMessageSender;
-import com.hedwig.morpheus.domain.model.implementation.Message;
+import com.hedwig.morpheus.domain.implementation.Message;
+import com.hedwig.morpheus.domain.interfaces.IMessageSender;
 import com.hedwig.morpheus.service.interfaces.IMessageManager;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +19,11 @@ public class MessageManager implements IMessageManager {
     // TODO : Make message queue
 
     private final IMessageSender messageSender;
-    private final IMessageReceiver messageReceiver;
 
 
     @Autowired
-    public MessageManager(IMessageSender messageSender, IMessageReceiver messageReceiver) {
+    public MessageManager(IMessageSender messageSender) {
         this.messageSender = messageSender;
-        this.messageReceiver = messageReceiver;
     }
 
     @Override

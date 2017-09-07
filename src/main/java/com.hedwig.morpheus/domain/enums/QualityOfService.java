@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.domain.model.enums;
+package com.hedwig.morpheus.domain.enums;
 
 /**
  * Created by hugo. All rights reserved.

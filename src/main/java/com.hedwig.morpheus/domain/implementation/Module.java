@@ -1,6 +1,6 @@
-package com.hedwig.morpheus.domain.model.implementation;
+package com.hedwig.morpheus.domain.implementation;
 
-import com.hedwig.morpheus.domain.model.enums.QualityOfService;
+import com.hedwig.morpheus.domain.enums.QualityOfService;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

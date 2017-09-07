@@ -1,8 +1,8 @@
 package com.hedwig.morpheus.business;
 
-import com.hedwig.morpheus.domain.model.implementation.Message;
-import com.hedwig.morpheus.domain.model.implementation.MessageQueue;
-import com.hedwig.morpheus.domain.model.interfaces.IMessageSender;
+import com.hedwig.morpheus.domain.implementation.Message;
+import com.hedwig.morpheus.domain.implementation.MessageQueue;
+import com.hedwig.morpheus.domain.interfaces.IMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

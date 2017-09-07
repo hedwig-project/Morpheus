@@ -1,6 +1,6 @@
 package com.hedwig.morpheus.service.implementation;
 
-import com.hedwig.morpheus.domain.model.implementation.Module;
+import com.hedwig.morpheus.domain.implementation.Module;
 import com.hedwig.morpheus.repository.ModuleRepository;
 import com.hedwig.morpheus.service.interfaces.IModuleManager;
 import com.hedwig.morpheus.service.interfaces.ITopicManager;

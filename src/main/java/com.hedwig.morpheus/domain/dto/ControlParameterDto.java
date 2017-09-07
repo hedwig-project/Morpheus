@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.rest.model;
+package com.hedwig.morpheus.domain.dto;
 
 /**
  * Created by hugo. All rights reserved.

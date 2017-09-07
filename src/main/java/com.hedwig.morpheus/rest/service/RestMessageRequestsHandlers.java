@@ -1,6 +1,6 @@
 package com.hedwig.morpheus.rest.service;
 
-import com.hedwig.morpheus.rest.model.MessageDto;
+import com.hedwig.morpheus.domain.dto.MessageDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
