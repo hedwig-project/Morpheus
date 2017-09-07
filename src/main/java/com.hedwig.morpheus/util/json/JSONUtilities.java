@@ -1,6 +1,7 @@
 package com.hedwig.morpheus.util.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,11 @@ public class JSONUtilities {
 
     public static <T> T deserialize(String jsonString, Class<T> clazz) throws IOException {
         T tObject = mapper.readValue(jsonString, clazz);
+        return tObject;
+    }
+
+    public static <T> T deserialize(String jsonString, TypeReference valueTypeRef) throws IOException {
+        T tObject = mapper.readValue(jsonString, valueTypeRef);
         return tObject;
     }
 }

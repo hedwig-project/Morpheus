@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.rest.model.configuration;
+package com.hedwig.morpheus.domain.dto;
 
 import java.util.List;
 

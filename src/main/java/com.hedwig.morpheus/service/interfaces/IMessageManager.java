@@ -1,6 +1,6 @@
 package com.hedwig.morpheus.service.interfaces;
 
-import com.hedwig.morpheus.domain.model.implementation.Message;
+import com.hedwig.morpheus.domain.implementation.Message;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**

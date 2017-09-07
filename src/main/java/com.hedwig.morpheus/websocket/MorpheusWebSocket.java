@@ -1,10 +1,12 @@
 package com.hedwig.morpheus.websocket;
 
-import com.hedwig.morpheus.rest.model.MessageDto;
-import com.hedwig.morpheus.rest.model.configuration.ConfigurationDto;
-import com.hedwig.morpheus.rest.service.RestConfigurationHandler;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.hedwig.morpheus.domain.dto.ConfigurationDto;
+import com.hedwig.morpheus.domain.dto.MessageDto;
+import com.hedwig.morpheus.domain.implementation.Message;
 import com.hedwig.morpheus.util.json.JSONUtilities;
 import com.hedwig.morpheus.util.listener.DisconnectionListener;
+import com.hedwig.morpheus.websocket.configurationHandlers.interfaces.IMessageHandler;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.slf4j.Logger;
@@ -26,72 +28,72 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Scope("singleton")
 public class MorpheusWebSocket {
 
+    static {
+
+    }
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final AtomicBoolean connectedToCloud;
-    private static Socket socketIO;
+    private final Socket socketIO;
     private final List<DisconnectionListener> disconnectionListeners;
     // TODO : These should come from the yaml configuration
-    static String url = "http://ec2-54-232-254-163.sa-east-1.compute.amazonaws.com:9090";
-
-//    IO.Options socketOptions;
-    int period = 10000;
-    String morpheusId = "morpheusId-201709";
+    private final String url = "http://ec2-54-232-254-163.sa-east-1.compute.amazonaws.com:9090";
+    private final String morpheusId = "morpheusId-201709";
+    private final IMessageHandler messageHandler;
 
     @Autowired
-    private RestConfigurationHandler configurationHandler;
+    public MorpheusWebSocket(IMessageHandler messageHandler) throws URISyntaxException {
+        this.messageHandler = messageHandler;
 
-    static {
         IO.Options socketOptions = new IO.Options();
         socketOptions.reconnection = true;
         socketOptions.forceNew = true;
         socketOptions.multiplex = false;
+        socketIO = IO.socket(url, socketOptions);
 
-        try {
-            socketIO = IO.socket(url, socketOptions);
-        } catch (URISyntaxException e) {
-            System.exit(0);
-        }
-    }
-
-    public MorpheusWebSocket() throws URISyntaxException {
-        disconnectionListeners = new ArrayList<>();
         connectedToCloud = new AtomicBoolean(false);
+        disconnectionListeners = new ArrayList<>();
 
         addConnectionRelatedListenersToWebSocket();
         addMessageListeners();
     }
 
-//    public MorpheusWebSocket() throws URISyntaxException {
-//        disconnectionListeners = new ArrayList<>();
-//        connectedToCloud = new AtomicBoolean(false);
-//
-//        IO.Options socketOptions = new IO.Options();
-//        socketOptions.reconnection = true;
-//        socketOptions.forceNew = true;
-//        socketOptions.multiplex = false;
-//
-//        socketIO = IO.socket(url, socketOptions);
-//        addConnectionRelatedListenersToWebSocket();
-//        addMessageListeners();
-//    }
+//    TODO : Make multithreaded tests here
 
     private void addMessageListeners() {
         socketIO.on("configurationMessage", args -> {
             try {
-                logger.info("Configuration message arrived");
+                logger.info("A new configuration message arrived");
                 ConfigurationDto configurationDto = JSONUtilities.deserialize((String) args[0], ConfigurationDto.class);
-                configurationHandler.inputNewConfiguration(configurationDto);
+                messageHandler.inputConfiguration(configurationDto);
             } catch (IOException e) {
                 logger.error("Unable to deserialize configuration message", e);
             }
-        }).on("dataTransmission", args -> {
+        });
+
+        socketIO.on("actionRequest", args -> {
             try {
-                logger.info("Message received - DataTransmission");
-                if(args.length == 0) return;
-                MessageDto messageDto = JSONUtilities.deserialize((String) args[0], MessageDto.class);
-                logger.info(messageDto.toString());
+                logger.info("A new actionRequest message has arrived");
+                if (args.length == 0) return;
+                List<MessageDto> messageDtoList =
+                        JSONUtilities.deserialize((String) args[0], new TypeReference<List<MessageDto>>() {
+                        });
+                messageHandler.inputActionRequest(messageDtoList);
             } catch (IOException e) {
-                logger.error("Unable to deserialize configuration message", e);
+                logger.error("Unable to deserialize actionRequest message", e);
+            }
+        });
+
+        socketIO.on("dataTransmission", args -> {
+            try {
+                logger.info("A new dataTransmission message has arrived");
+                if (args.length == 0) return;
+                List<MessageDto> messageDtoList =
+                        JSONUtilities.deserialize((String) args[0], new TypeReference<List<MessageDto>>() {
+                        });
+                messageHandler.inputDataTransmission(messageDtoList);
+            } catch (IOException e) {
+                logger.error("Unable to deserialize dataTransmission message", e);
             }
         });
     }
@@ -110,14 +112,10 @@ public class MorpheusWebSocket {
             connectedToCloud.set(true);
         }).on(Socket.EVENT_DISCONNECT, args -> {
             logger.warn("Morpheus disconnected from the cloud. Reconnecting.");
-//            JSONObject obj = (JSONObject) args[0];
-//            fireDisconnectionEvent(obj.toString());
             connectedToCloud.set(false);
         }).on(Socket.EVENT_CONNECT_ERROR, args -> {
             logger.error("Error when trying to connect to cloud. Trying again.");
             connectedToCloud.set(false);
-//            String cause = ((Exception) args[0]).getCause().getMessage();
-//            fireDisconnectionEvent(cause);
         });
     }
 
@@ -135,8 +133,10 @@ public class MorpheusWebSocket {
 //        }
 //    }
 
-    public static void sendConfirmationMessage(String message) {
+    public void sendConfirmationMessage(Message message) {
 //        socketIO.send(message);
+
+//        TODO : Serialize and get message type
         socketIO.emit("confirmation", message);
     }
 }

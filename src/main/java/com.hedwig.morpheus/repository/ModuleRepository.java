@@ -1,6 +1,6 @@
 package com.hedwig.morpheus.repository;
 
-import com.hedwig.morpheus.domain.model.implementation.Module;
+import com.hedwig.morpheus.domain.implementation.Module;
 import org.springframework.data.repository.CrudRepository;
 
 /**

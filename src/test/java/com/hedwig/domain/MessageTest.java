@@ -1,7 +1,7 @@
 package com.hedwig.domain;
 
 import com.hedwig.morpheus.EntryPoint;
-import com.hedwig.morpheus.domain.model.implementation.Message;
+import com.hedwig.morpheus.domain.implementation.Message;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

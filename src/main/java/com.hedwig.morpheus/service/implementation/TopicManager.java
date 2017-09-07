@@ -1,6 +1,6 @@
 package com.hedwig.morpheus.service.implementation;
 
-import com.hedwig.morpheus.domain.model.interfaces.IServer;
+import com.hedwig.morpheus.domain.interfaces.IServer;
 import com.hedwig.morpheus.service.interfaces.ITopicManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

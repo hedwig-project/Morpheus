@@ -1,8 +1,8 @@
 package com.hedwig.morpheus.business;
 
-import com.hedwig.morpheus.domain.model.implementation.Message;
-import com.hedwig.morpheus.domain.model.implementation.MessageQueue;
-import com.hedwig.morpheus.domain.model.interfaces.IMessageReceiver;
+import com.hedwig.morpheus.domain.implementation.Message;
+import com.hedwig.morpheus.domain.implementation.MessageQueue;
+import com.hedwig.morpheus.domain.interfaces.IMessageReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,22 +49,17 @@ public class MessageReceiver implements IMessageReceiver {
 
     @Override
     public void processIncomeMessage(Message message) {
+
+//        TODO : Save messages to database
+
         switch (message.getType()) {
             case CONFIRMATION:
-                cloud.sendConfirmationMessage(message);
-                break;
             case DATA_TRANSMISSION:
-                cloud.sendDataTransmissionMessage(message);
-                break;
             case CONFIGURATION:
-                cloud.sendConfigurationMessage(message);
-                break;
+                cloud.sendMessageToCloud(message);
             default:
-                logger.warn("Invalid message from module");
-                return;
+                throw new IllegalArgumentException("Invalid message type");
         }
-
-        logger.info("Message processed successfully");
     }
 
     @Override

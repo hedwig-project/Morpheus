@@ -1,6 +1,6 @@
 package com.hedwig.morpheus.service.interfaces;
 
-import com.hedwig.morpheus.domain.model.implementation.Module;
+import com.hedwig.morpheus.domain.implementation.Module;
 
 /**
  * Created by hugo. All rights reserved.

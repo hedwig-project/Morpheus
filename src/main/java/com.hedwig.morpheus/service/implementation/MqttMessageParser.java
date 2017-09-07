@@ -1,6 +1,6 @@
 package com.hedwig.morpheus.service.implementation;
 
-import com.hedwig.morpheus.domain.model.implementation.Message;
+import com.hedwig.morpheus.domain.implementation.Message;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

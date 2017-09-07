@@ -1,8 +1,6 @@
 package com.hedwig.morpheus.business;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hedwig.morpheus.domain.model.implementation.Message;
-import com.hedwig.morpheus.util.json.JSONUtilities;
+import com.hedwig.morpheus.domain.implementation.Message;
 import com.hedwig.morpheus.websocket.MorpheusWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +19,8 @@ import org.springframework.stereotype.Component;
 public class Cloud {
     private final String serialNumber;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private final MorpheusWebSocket morpheusWebSocket;
 
     @Value("${api.host}")
     private String apiHost;
@@ -42,45 +42,15 @@ public class Cloud {
 
 
     @Autowired
-    public Cloud(Environment environment) {
+    public Cloud(Environment environment, MorpheusWebSocket morpheusWebSocket) {
         serialNumber = environment.getProperty("morpheus.configuration.serialNumber");
+        this.morpheusWebSocket = morpheusWebSocket;
     }
 
     // TODO : Actually send messages to cloud
 
-    public void sendConfirmationMessage(Message message) {
-        String logMessage =
-                String.format(String.format("Confirmation message from topic %s sent to cloud", message.getId()));
-
-        String urlString = String.format("http://%s:%s/%s", apiHost, apiPort, apiConfirmation);
-
-        sendMessageToCloud(urlString, message.toString(), logMessage);
-    }
-
-    public void sendDataTransmissionMessage(Message message) {
-        String logMessage =
-                String.format(String.format("Data transmission message from topic %s sent to cloud", message.getId()));
-
-        String urlString = String.format("http://%s:%s/%s", apiHost, apiPort, apiDataTransmission);
-
-        sendMessageToCloud(urlString, message.toString(), logMessage);
-    }
-
-    public void sendConfigurationMessage(Message message) {
-        String logMessage =
-                String.format(String.format("Data request message from topic %s sent to cloud", message.getId()));
-
-        String urlString = String.format("http://%s:%s/%s", apiHost, apiPort, apiConfiguration);
-        String jsonString;
-
-        try {
-            jsonString = JSONUtilities.serialize(message);
-        } catch (JsonProcessingException e) {
-            logger.error("Unable to convert message to json", e);
-            return;
-        }
-
-        sendMessageToCloud(urlString, jsonString, logMessage);
+    public void sendMessageToCloud(Message message) {
+        morpheusWebSocket.sendConfirmationMessage(message);
     }
 
 //    private void sendMessageToCloud(String urlString, String message, String logMessage) {
@@ -109,7 +79,4 @@ public class Cloud {
 //        }
 //    }
 
-    private void sendMessageToCloud(String urlString, String message, String logMessage) {
-        MorpheusWebSocket.sendConfirmationMessage(message);
-    }
 }

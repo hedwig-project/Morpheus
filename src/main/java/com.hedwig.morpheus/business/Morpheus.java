@@ -1,8 +1,8 @@
 package com.hedwig.morpheus.business;
 
 import com.hedwig.morpheus.EntryPoint;
-import com.hedwig.morpheus.domain.model.interfaces.IMessageReceiver;
-import com.hedwig.morpheus.domain.model.interfaces.IServer;
+import com.hedwig.morpheus.domain.interfaces.IMessageReceiver;
+import com.hedwig.morpheus.domain.interfaces.IServer;
 import com.hedwig.morpheus.service.interfaces.IMessageManager;
 import com.hedwig.morpheus.service.interfaces.IModuleManager;
 import com.hedwig.morpheus.service.interfaces.ITopicManager;
