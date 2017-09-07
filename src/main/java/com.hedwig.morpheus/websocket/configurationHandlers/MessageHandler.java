@@ -2,13 +2,19 @@ package com.hedwig.morpheus.websocket.configurationHandlers;
 
 import com.hedwig.morpheus.domain.enums.MessageType;
 import com.hedwig.morpheus.domain.enums.QualityOfService;
+import com.hedwig.morpheus.domain.enums.ReportingResult;
+import com.hedwig.morpheus.domain.enums.ReportingType;
 import com.hedwig.morpheus.domain.implementation.Message;
 import com.hedwig.morpheus.domain.implementation.Module;
 import com.hedwig.morpheus.domain.dto.MessageDto;
-import com.hedwig.morpheus.domain.dto.ConfigurationDto;
-import com.hedwig.morpheus.domain.dto.ModuleConfigurationDto;
-import com.hedwig.morpheus.domain.dto.MorpheusConfigurationDto;
-import com.hedwig.morpheus.domain.dto.RegistrationDto;
+import com.hedwig.morpheus.domain.dto.configuration.ConfigurationDto;
+import com.hedwig.morpheus.domain.dto.configuration.ModuleConfigurationDto;
+import com.hedwig.morpheus.domain.dto.configuration.MorpheusConfigurationDto;
+import com.hedwig.morpheus.domain.dto.configuration.RegistrationDto;
+import com.hedwig.morpheus.domain.implementation.Report;
+import com.hedwig.morpheus.domain.implementation.Result;
+import com.hedwig.morpheus.service.implementation.ConfigurationReporter;
+import com.hedwig.morpheus.service.implementation.UUIDGenerator;
 import com.hedwig.morpheus.service.interfaces.IMessageManager;
 import com.hedwig.morpheus.service.interfaces.IModuleManager;
 import com.hedwig.morpheus.websocket.configurationHandlers.interfaces.IMessageHandler;
@@ -21,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.InvalidParameterException;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by hugo. All rights reserved.
@@ -35,25 +42,39 @@ public class MessageHandler implements IMessageHandler {
 
     private final IModuleManager moduleManager;
     private final IMessageManager messageManager;
+    private final ConfigurationReporter configurationReporter;
 
     @Autowired
     public MessageHandler(IModuleManager moduleManager,
                           IMessageManager messageManager,
-                          ConversionService conversionService) {
+                          ConversionService conversionService,
+                          ConfigurationReporter configurationReporter) {
         this.conversionService = conversionService;
         this.moduleManager = moduleManager;
         this.messageManager = messageManager;
+        this.configurationReporter = configurationReporter;
     }
 
     @Override
-    public void inputConfiguration(ConfigurationDto configurationDto) {
+    public String inputConfiguration(ConfigurationDto configurationDto) {
+        UUID uuid = UUIDGenerator.generateUUId();
+
         if (null == configurationDto) {
+            Report report = new Report().reportType(ReportingType.EMPTY_PARAMETERS)
+                                        .reportResult(ReportingResult.FAILED)
+                                        .reportDescription("The configuration message did not follow the protocol");
+
+            configurationReporter.addReport(uuid, report);
+
             logger.error("Configuration message did not follow the protocol",
                          new InvalidParameterException("Invalid configuration message"));
+
+        } else {
+            makeMorpheusConfiguration(configurationDto.getMorpheusConfiguration(), uuid);
+            makeModulesConfiguration(configurationDto.getModulesConfiguration(), uuid);
         }
 
-        makeMorpheusConfiguration(configurationDto.getMorpheusConfiguration());
-        makeModulesConfiguration(configurationDto.getModulesConfiguration());
+        return configurationReporter.generateReportForConfiguration(uuid);
     }
 
     @Override
@@ -84,7 +105,7 @@ public class MessageHandler implements IMessageHandler {
         }
 
 //        TODO : Register uniqueID
-        if(!validateMessage(messageDto)) {
+        if (!validateMessage(messageDto)) {
             logger.error("Invalid message");
             return;
         }
@@ -100,21 +121,21 @@ public class MessageHandler implements IMessageHandler {
         sendMessageToBroker(convertedMessage);
     }
 
-    private void makeModulesConfiguration(List<ModuleConfigurationDto> modulesConfiguration) {
+    private void makeModulesConfiguration(List<ModuleConfigurationDto> modulesConfiguration, UUID uuid) {
         if (null == modulesConfiguration) {
             return;
         }
 
         for (ModuleConfigurationDto eachModuleConfiguration : modulesConfiguration) {
             if (moduleManager.containsModuleByTopic(eachModuleConfiguration.getModuleTopic())) {
-                configureEachModule(eachModuleConfiguration);
+                configureEachModule(eachModuleConfiguration, uuid);
             } else {
                 logger.info(String.format("Module %s not yet registered", eachModuleConfiguration.getModuleName()));
             }
         }
     }
 
-    private void configureEachModule(ModuleConfigurationDto moduleConfiguration) {
+    private void configureEachModule(ModuleConfigurationDto moduleConfiguration, UUID uuid) {
         if (null == moduleConfiguration) {
             return;
         }
@@ -130,11 +151,22 @@ public class MessageHandler implements IMessageHandler {
 
         Boolean unregister = moduleConfiguration.getUnregister();
         if (unregister != null && unregister) {
-            boolean removed = moduleManager.removeModuleByTopic(moduleTopic);
-            if (removed) {
+            Result result = moduleManager.removeModuleByTopic(moduleTopic);
+            if (result.isSuccess()) {
                 logger.info(String.format("Module %s removed successfully", moduleName));
+                Report report = new Report().reportIdentification(moduleId.toString())
+                                            .reportType(ReportingType.MODULE_REMOVAL)
+                                            .reportResult(ReportingResult.REMOVED)
+                                            .reportDescription("Module removed successfully");
+                configurationReporter.addReport(uuid, report);
+
             } else {
                 logger.info(String.format("Not possible to remove module %s", moduleName));
+                Report report = new Report().reportIdentification(moduleId.toString())
+                                            .reportType(ReportingType.MODULE_REMOVAL)
+                                            .reportResult(ReportingResult.FAILED)
+                                            .reportDescription(result.getDescription());
+                configurationReporter.addReport(uuid, report);
             }
 
             return;
@@ -150,11 +182,7 @@ public class MessageHandler implements IMessageHandler {
         List<MessageDto> messages = moduleConfiguration.getMessages();
 
         if (messages != null && messages.size() > 0) {
-            messages.stream()
-                    .forEach(m -> assembleMessage(m,
-                                                  moduleId,
-                                                  moduleName,
-                                                  module.getPublishToTopic()));
+            messages.stream().forEach(m -> assembleMessage(m, moduleId, moduleName, module.getPublishToTopic()));
         }
     }
 
@@ -171,25 +199,25 @@ public class MessageHandler implements IMessageHandler {
         sendMessageToBroker(convertedMessage);
     }
 
-    private void makeMorpheusConfiguration(MorpheusConfigurationDto morpheusConfiguration) {
+    private void makeMorpheusConfiguration(MorpheusConfigurationDto morpheusConfiguration, UUID uuid) {
         if (null == morpheusConfiguration) {
             return;
         }
 
         logger.info("Configuring Morpheus");
 
-        makeModuleRegistrations(morpheusConfiguration.getRegister());
+        makeModuleRegistrations(morpheusConfiguration.getRegister(), uuid);
     }
 
-    private void makeModuleRegistrations(List<RegistrationDto> register) {
+    private void makeModuleRegistrations(List<RegistrationDto> register, UUID uuid) {
         if (null == register || register.size() == 0) {
             logger.info("No modules to be registered");
         }
 
-        register.stream().forEach(this::registerModule);
+        register.stream().forEach(registration -> registerModule(registration, uuid));
     }
 
-    private void registerModule(RegistrationDto registrationDto) {
+    private void registerModule(RegistrationDto registrationDto, UUID uuid) {
         if (null == registrationDto) {
             logger.info("Empty registration information");
             return;
@@ -202,7 +230,21 @@ public class MessageHandler implements IMessageHandler {
         module.setQualityOfService(QualityOfService.getQosFromInteger(registrationDto.getQos()));
         module.configureReceiveMessagesAtMostEvery(registrationDto.getReceiveMessagesAtMostEvery());
 
-        moduleManager.registerModule(module);
+        Result result = moduleManager.registerModule(module);
+
+        if (result.isSuccess()) {
+            Report report = new Report().reportIdentification(module.getId().toString())
+                                        .reportType(ReportingType.MODULE_REGISTRATION)
+                                        .reportResult(ReportingResult.REGISTERED)
+                                        .reportDescription("Module registered successfully");
+            configurationReporter.addReport(uuid, report);
+        } else {
+            Report report = new Report().reportIdentification(module.getId().toString())
+                                        .reportType(ReportingType.MODULE_REGISTRATION)
+                                        .reportResult(ReportingResult.FAILED)
+                                        .reportDescription(result.getDescription());
+            configurationReporter.addReport(uuid, report);
+        }
     }
 
     private void sendMessageToBroker(Message message) {

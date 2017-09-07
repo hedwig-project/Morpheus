@@ -1,5 +1,6 @@
 package com.hedwig.morpheus.domain.interfaces;
 
+import com.hedwig.morpheus.domain.implementation.Result;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 /**
@@ -13,7 +14,7 @@ public interface IServer {
 
     void shutdown();
 
-    void subscribe(String topic, Runnable successfullySubscribed, Runnable failureInSubscription);
+    Result subscribe(String topic);
 
-    boolean unsubscribe(String topic);
+    Result unsubscribe(String topic);
 }

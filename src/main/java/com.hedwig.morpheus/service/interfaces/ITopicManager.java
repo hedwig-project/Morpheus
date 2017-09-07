@@ -1,12 +1,14 @@
 package com.hedwig.morpheus.service.interfaces;
 
+import com.hedwig.morpheus.domain.implementation.Result;
+
 /**
  * Created by hugo. All rights reserved.
  */
 public interface ITopicManager {
-    void subscribe(String topic, String moduleName, Runnable successfullyRegistered);
+    Result subscribe(String topic);
 
-    boolean unsubscribe(String topic);
+    Result unsubscribe(String topic);
 
     boolean isSubscribed(String topic);
 }

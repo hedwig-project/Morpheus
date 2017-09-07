@@ -2,6 +2,7 @@ package com.hedwig.morpheus.business;
 
 import com.hedwig.morpheus.domain.implementation.Message;
 import com.hedwig.morpheus.domain.implementation.MessageQueue;
+import com.hedwig.morpheus.domain.implementation.Result;
 import com.hedwig.morpheus.domain.interfaces.IServer;
 import com.hedwig.morpheus.security.Securities;
 import org.eclipse.paho.client.mqttv3.*;
@@ -140,13 +141,12 @@ public class MQTTServer implements IServer {
 
                     Message message = conversionService.convert(mqttMessage, Message.class);
 
-                    if(null == message) {
+                    if (null == message) {
                         logger.error("Could not convert message", new IllegalStateException("Invalid message"));
                         return;
                     }
 
                     message.setTopic(topic);
-
                     incomeMessageQueue.push(message);
                 });
             }
@@ -203,24 +203,6 @@ public class MQTTServer implements IServer {
         senderThread.start();
     }
 
-    @Override
-    public void subscribe(String topic, Runnable successfullySubscribed, Runnable failureInSubscription) {
-        try {
-            mqttAsyncClient.subscribe(topic, 0, null, new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    successfullySubscribed.run();
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    failureInSubscription.run();
-                }
-            });
-        } catch (MqttException e) {
-            logger.error("Error in subscription", e);
-        }
-    }
 
     @Override
     public void shutdown() {
@@ -235,15 +217,81 @@ public class MQTTServer implements IServer {
     }
 
     @Override
-    public boolean unsubscribe(String topic) {
+    public Result subscribe(String topic) {
+        Result result = new Result();
+        try {
+            IMqttToken token = mqttAsyncClient.subscribe(topic, 0);
+            token.waitForCompletion();
+            int grantedQos = token.getGrantedQos()[0];
+
+            switch (grantedQos) {
+                case 0:
+                case 1:
+                case 2:
+                    result.setSuccess(true);
+                    result.setDescription("Subscribed to topic successfully");
+                    break;
+                default:
+                    result.setSuccess(false);
+                    result.setDescription("Failed to subscribe to topic");
+            }
+
+            return result;
+
+        } catch (MqttException e) {
+            logger.error("Error in subscription", e);
+            result.setSuccess(false);
+            result.setDescription("Failed to subscribe to topic due to MqttException");
+            return result;
+        }
+    }
+
+    @Override
+    public Result unsubscribe(String topic) {
+        Result result = new Result();
         try {
             IMqttToken token = mqttAsyncClient.unsubscribe(topic);
             token.waitForCompletion();
-            return token.getResponse().toString().equals("UNSUBACK msgId 4");
+            result.setSuccess(true);
+            result.setDescription("Unsubscribed from topic successfully");
         } catch (MqttException e) {
             logger.error("Error in subscription", e);
+            result.setSuccess(false);
+            result.setDescription("Failed to unsubscribe from topic due to MqttException");
         }
 
-        return false;
+        return result;
     }
+
+//    @Override
+//    public void subscribe(String topic, Runnable successfullySubscribed, Runnable failureInSubscription) {
+//        try {
+//            mqttAsyncClient.subscribe(topic, 0, null, new IMqttActionListener() {
+//                @Override
+//                public void onSuccess(IMqttToken asyncActionToken) {
+//                    successfullySubscribed.run();
+//                }
+//
+//                @Override
+//                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+//                    failureInSubscription.run();
+//                }
+//            });
+//        } catch (MqttException e) {
+//            logger.error("Error in subscription", e);
+//        }
+//    }
+
+//    @Override
+//    public boolean unsubscribe(String topic) {
+//        try {
+//            IMqttToken token = mqttAsyncClient.unsubscribe(topic);
+//            token.waitForCompletion();
+//            return token.getResponse().toString().equals("UNSUBACK msgId 4");
+//        } catch (MqttException e) {
+//            logger.error("Error in subscription", e);
+//        }
+//
+//        return false;
+//    }
 }

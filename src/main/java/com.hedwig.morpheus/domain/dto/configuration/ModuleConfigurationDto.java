@@ -1,4 +1,6 @@
-package com.hedwig.morpheus.domain.dto;
+package com.hedwig.morpheus.domain.dto.configuration;
+
+import com.hedwig.morpheus.domain.dto.MessageDto;
 
 import java.util.List;
 

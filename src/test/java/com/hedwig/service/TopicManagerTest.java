@@ -32,11 +32,7 @@ public class TopicManagerTest {
     @Before
     public void setupMocks() {
         // Subscription
-        Mockito.doAnswer(invocation -> {
-            Runnable success = (Runnable) invocation.getArguments()[1];
-            success.run();
-            return null;
-        }).when(mqttServer).subscribe(Mockito.anyString(), Mockito.any(Runnable.class), Mockito.any(Runnable.class));
+        Mockito.when(mqttServer.subscribe(Mockito.anyString())).thenReturn(true);
 
         // Unsubscribe
         Mockito.when(mqttServer.unsubscribe(Mockito.anyString())).thenReturn(true);
@@ -45,7 +41,7 @@ public class TopicManagerTest {
     @Test
     public void subscribeToTopic() {
         String topic = "hw/kitchen/s2m";
-        topicManager.subscribe(topic, "kitchen", null);
+        topicManager.subscribe(topic);
 
         assertTrue(topicManager.isSubscribed(topic));
     }
@@ -59,7 +55,7 @@ public class TopicManagerTest {
     @Test
     public void unsubscribeFromTopic() {
         String topic = "hw/kitchen/s2m";
-        topicManager.subscribe(topic, "kitchen", null);
+        topicManager.subscribe(topic);
 
         assertTrue(topicManager.isSubscribed(topic));
 
