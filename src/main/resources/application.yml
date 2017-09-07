@@ -26,6 +26,11 @@ morpheus:
     keepAlive: 10000
     serialNumber: adf654wae84fea5d8ea6
 
+cloud:
+  protocol: http
+  host: ec2-54-232-254-163.sa-east-1.compute.amazonaws.com
+  port: 9090
+
 api:
   host: 138.197.83.143
   port: 3000
