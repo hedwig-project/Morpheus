@@ -25,6 +25,11 @@ morpheus:
   configuration:
     keepAlive: 10000
     serialNumber: adf654wae84fea5d8ea6
+    backup:
+      numberOfResendTries: 5
+      directory: /home/hugo/Documents/TCC/morpheusMessageBackup
+      persistEvery: 20000
+      fileName: backupMessages.txt
 
 cloud:
   protocol: http

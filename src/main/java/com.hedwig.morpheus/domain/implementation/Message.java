@@ -1,5 +1,7 @@
 package com.hedwig.morpheus.domain.implementation;
 
+import com.hedwig.morpheus.domain.enums.MessagePriority;
+import com.hedwig.morpheus.domain.enums.MessageType;
 import com.hedwig.morpheus.domain.enums.QualityOfService;
 
 import java.util.LinkedList;
@@ -13,13 +15,17 @@ import static java.util.Objects.hash;
  * Created by hugo. All rights reserved.
  */
 public class Message implements Comparable<Message> {
+    private String id;
     private final MessageType type;
     private final List<ControlParameter> controlParameters;
-    private String id;
     private QualityOfService qosLevel;
     private String topic;
     private MessageBody body;
     private MessagePriority priority;
+
+    public Message() {
+        this("", MessageType.DATA_TRANSMISSION, null);
+    }
 
     public Message(String topic, MessageType type, MessageBody body) {
         this.controlParameters = new LinkedList<>();
@@ -27,18 +33,14 @@ public class Message implements Comparable<Message> {
         this.body = body;
         this.topic = topic;
         this.priority = MessagePriority.NORMAL;
-
         this.qosLevel = QualityOfService.FIRST_LEVEL;
 
         createId();
     }
 
-//    TODO : Use ID generator instead of this one. And it should not be created here
-
     private void createId() {
         int hashValue = Math.abs(Objects.hash(type, body, topic));
-
-        id = String.format("%d%d", hashValue, System.currentTimeMillis());
+        this.id = String.format("%d%d", hashValue, System.currentTimeMillis());
     }
 
     @Override
@@ -103,7 +105,7 @@ public class Message implements Comparable<Message> {
     }
 
     public String toString() {
-        return String.format("%s%s%s", type.toString(), getControlParametersSection(), body.toString());
+        return String.format("#%s\n%s%s", type.toStringRepresentation(), getControlParametersSection(), body.toString());
     }
 
     public boolean equals(Object o) {
@@ -120,32 +122,6 @@ public class Message implements Comparable<Message> {
         return hash(topic, type, controlParameters, body);
     }
 
-    public enum MessageType {
-        CONFIGURATION("configuration"),
-        ACTION_REQUEST("action_request"),
-        CONFIRMATION("confirmation"),
-        DATA_TRANSMISSION("data_transmission"),
-        DATA_REQUEST("data_request");
-
-        private final String headerValue;
-
-        MessageType(String headerValue) {
-            this.headerValue = headerValue;
-        }
-
-        public String getHeaderValue() {
-            return headerValue;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("#%s\n", headerValue);
-        }
-    }
-
-    public enum MessagePriority {
-        HIGH, NORMAL, LOW;
-    }
 
     public static class MessageBody {
         private String payload;

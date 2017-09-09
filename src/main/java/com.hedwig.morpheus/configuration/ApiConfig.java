@@ -1,6 +1,7 @@
 package com.hedwig.morpheus.configuration;
 
 import com.hedwig.morpheus.converter.MessageDtoToMessageConverter;
+import com.hedwig.morpheus.converter.MessageToMessageDtoConverter;
 import com.hedwig.morpheus.converter.MqttMessageToMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ public class ApiConfig {
         Set<Converter> converters = new HashSet<>();
 
         converters.add(new MessageDtoToMessageConverter());
+        converters.add(new MessageToMessageDtoConverter());
         converters.add(new MqttMessageToMessageConverter());
 
         return converters;

@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.util.json;
+package com.hedwig.morpheus.util.tools;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

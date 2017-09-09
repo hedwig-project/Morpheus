@@ -1,8 +1,9 @@
 package com.hedwig.morpheus.converter;
 
-import com.hedwig.morpheus.domain.implementation.Message;
 import com.hedwig.morpheus.domain.dto.ControlParameterDto;
 import com.hedwig.morpheus.domain.dto.MessageDto;
+import com.hedwig.morpheus.domain.enums.MessageType;
+import com.hedwig.morpheus.domain.implementation.Message;
 import org.springframework.core.convert.converter.Converter;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public class MessageDtoToMessageConverter implements Converter<MessageDto, Messa
 
     @Override
     public Message convert(MessageDto source) {
-        Message.MessageType type = getMessageTypeFromString(source.getMessageType());
+        MessageType type = getMessageTypeFromString(source.getMessageType());
         Message.MessageBody body = new Message.MessageBody(source.getPayload());
 
         Message message = new Message(source.getTopic(), type, body);
@@ -33,14 +34,14 @@ public class MessageDtoToMessageConverter implements Converter<MessageDto, Messa
         return message;
     }
 
-    private Message.MessageType getMessageTypeFromString(String messageType) {
+    private MessageType getMessageTypeFromString(String messageType) {
         switch (messageType) {
             case "configuration":
-                return Message.MessageType.CONFIGURATION;
+                return MessageType.CONFIGURATION;
             case "action_request":
-                return Message.MessageType.ACTION_REQUEST;
+                return MessageType.ACTION_REQUEST;
             case "data_transmission":
-                return Message.MessageType.DATA_TRANSMISSION;
+                return MessageType.DATA_TRANSMISSION;
             default:
                 return null;
         }

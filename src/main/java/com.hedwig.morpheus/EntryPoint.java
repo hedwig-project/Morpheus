@@ -46,4 +46,9 @@ public class EntryPoint implements ApplicationRunner {
     public MessageQueue outputMessageQueue() {
         return new MessageQueue();
     }
+
+    @Bean(name = "backupMessageQueue")
+    public MessageQueue backupMessageQueue() {
+        return new MessageQueue();
+    }
 }

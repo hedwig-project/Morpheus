@@ -1,5 +1,6 @@
 package com.hedwig.morpheus.service.implementation;
 
+import com.hedwig.morpheus.domain.enums.MessageType;
 import com.hedwig.morpheus.domain.implementation.Message;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ public class MqttMessageParser {
 
         String stringType = messageParts.get(0);
 
-        Message.MessageType messageType = parseMessageType(stringType);
+        MessageType messageType = parseMessageType(stringType);
 
         if(messageType == null) {
             logger.error("Invalid message", new IllegalArgumentException("Message does not follow protocol"));
@@ -69,7 +70,7 @@ public class MqttMessageParser {
         return message;
     }
 
-    private static Message.MessageType parseMessageType(String messageType) {
+    private static MessageType parseMessageType(String messageType) {
         String[] typeArray = messageType.split("#");
 
         if (typeArray.length < 2) {
@@ -82,15 +83,15 @@ public class MqttMessageParser {
 
         switch (type) {
             case "configuration":
-                return Message.MessageType.CONFIGURATION;
+                return MessageType.CONFIGURATION;
             case "action_request":
-                return Message.MessageType.ACTION_REQUEST;
+                return MessageType.ACTION_REQUEST;
             case "confirmation":
-                return Message.MessageType.CONFIRMATION;
+                return MessageType.CONFIRMATION;
             case "data_transmission":
-                return Message.MessageType.DATA_TRANSMISSION;
+                return MessageType.DATA_TRANSMISSION;
             case "data_request":
-                return Message.MessageType.DATA_REQUEST;
+                return MessageType.DATA_REQUEST;
         }
 
         logger.error(String.format("Message type %s does not exist", messageType),

@@ -1,9 +1,11 @@
 package com.hedwig.morpheus.domain.dto;
 
+import java.io.Serializable;
+
 /**
  * Created by hugo. All rights reserved.
  */
-public class ControlParameterDto {
+public class ControlParameterDto implements Serializable {
 
     private String parameter;
     private String value;

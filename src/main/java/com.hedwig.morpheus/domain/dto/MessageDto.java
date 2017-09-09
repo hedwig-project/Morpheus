@@ -1,11 +1,12 @@
 package com.hedwig.morpheus.domain.dto;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by hugo. All rights reserved.
  */
-public class MessageDto {
+public class MessageDto implements Serializable {
 
     private String payload;
 
