@@ -7,6 +7,7 @@ import java.util.List;
  */
 public class MorpheusConfigurationDto {
     private List<RegistrationDto> register;
+    private boolean requestSendingPersistedMessages;
 
     public MorpheusConfigurationDto() {
 
@@ -22,5 +23,13 @@ public class MorpheusConfigurationDto {
 
     public void setRegister(List<RegistrationDto> register) {
         this.register = register;
+    }
+
+    public boolean isRequestSendingPersistedMessages() {
+        return requestSendingPersistedMessages;
+    }
+
+    public void setRequestSendingPersistedMessages(boolean requestSendingPersistedMessages) {
+        this.requestSendingPersistedMessages = requestSendingPersistedMessages;
     }
 }

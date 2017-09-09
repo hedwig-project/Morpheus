@@ -1,5 +1,6 @@
 package com.hedwig.morpheus.websocket.configurationHandlers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedwig.morpheus.domain.enums.MessageType;
 import com.hedwig.morpheus.domain.enums.QualityOfService;
 import com.hedwig.morpheus.domain.enums.ReportingResult;
@@ -13,8 +14,10 @@ import com.hedwig.morpheus.domain.dto.configuration.MorpheusConfigurationDto;
 import com.hedwig.morpheus.domain.dto.configuration.RegistrationDto;
 import com.hedwig.morpheus.domain.implementation.Report;
 import com.hedwig.morpheus.domain.implementation.Result;
+import com.hedwig.morpheus.service.implementation.BackupMessageService;
 import com.hedwig.morpheus.service.implementation.ConfigurationReporter;
-import com.hedwig.morpheus.service.implementation.UUIDGenerator;
+import com.hedwig.morpheus.util.tools.JSONUtilities;
+import com.hedwig.morpheus.util.tools.UUIDGenerator;
 import com.hedwig.morpheus.service.interfaces.IMessageManager;
 import com.hedwig.morpheus.service.interfaces.IModuleManager;
 import com.hedwig.morpheus.websocket.configurationHandlers.interfaces.IMessageHandler;
@@ -43,6 +46,7 @@ public class MessageHandler implements IMessageHandler {
     private final IModuleManager moduleManager;
     private final IMessageManager messageManager;
     private final ConfigurationReporter configurationReporter;
+    private final String MORPHEUS_ID = "mopheus-configuration";
 
     @Autowired
     public MessageHandler(IModuleManager moduleManager,
@@ -207,11 +211,31 @@ public class MessageHandler implements IMessageHandler {
         logger.info("Configuring Morpheus");
 
         makeModuleRegistrations(morpheusConfiguration.getRegister(), uuid);
+        makeOtherMorpheusConfigurations(morpheusConfiguration, uuid);
+    }
+
+    private void makeOtherMorpheusConfigurations(MorpheusConfigurationDto morpheusConfiguration, UUID uuid) {
+        if(morpheusConfiguration.isRequestSendingPersistedMessages()) {
+            List<MessageDto> messageDtos = BackupMessageService.readSerializedMessagesInFile();
+            Report report = null;
+            try {
+                report = new Report().reportIdentification(MORPHEUS_ID)
+                                            .reportType(ReportingType.MORPHEUS_REQUEST)
+                                            .reportResult(ReportingResult.OKAY)
+                                            .reportDescription(JSONUtilities.serialize(messageDtos));
+            } catch (JsonProcessingException e) {
+                logger.info("Error in processing serialized messages");
+            }
+
+            configurationReporter.addReport(uuid, report);
+            logger.info("Persisted messages were required");
+        }
     }
 
     private void makeModuleRegistrations(List<RegistrationDto> register, UUID uuid) {
         if (null == register || register.size() == 0) {
             logger.info("No modules to be registered");
+            return;
         }
 
         register.stream().forEach(registration -> registerModule(registration, uuid));

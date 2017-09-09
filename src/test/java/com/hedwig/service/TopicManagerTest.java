@@ -2,6 +2,7 @@ package com.hedwig.service;
 
 import com.hedwig.morpheus.EntryPoint;
 import com.hedwig.morpheus.business.MQTTServer;
+import com.hedwig.morpheus.domain.implementation.Result;
 import com.hedwig.morpheus.service.implementation.TopicManager;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,11 +32,14 @@ public class TopicManagerTest {
 
     @Before
     public void setupMocks() {
+        Result result = new Result();
+        result.setSuccess(true);
+
         // Subscription
-        Mockito.when(mqttServer.subscribe(Mockito.anyString())).thenReturn(true);
+        Mockito.when(mqttServer.subscribe(Mockito.anyString())).thenReturn(result);
 
         // Unsubscribe
-        Mockito.when(mqttServer.unsubscribe(Mockito.anyString())).thenReturn(true);
+        Mockito.when(mqttServer.unsubscribe(Mockito.anyString())).thenReturn(result);
     }
 
     @Test
@@ -49,7 +53,7 @@ public class TopicManagerTest {
     @Test
     public void tryToUnsubscribeUnkownTopic() {
         String topic = "hw/kitchen/s2m";
-        assertFalse(topicManager.unsubscribe(topic));
+        assertFalse(topicManager.unsubscribe(topic).isSuccess());
     }
 
     @Test
@@ -59,7 +63,7 @@ public class TopicManagerTest {
 
         assertTrue(topicManager.isSubscribed(topic));
 
-        assertTrue(topicManager.unsubscribe(topic));
+        assertTrue(topicManager.unsubscribe(topic).isSuccess());
 
         assertFalse(topicManager.isSubscribed(topic));
     }

@@ -3,6 +3,7 @@ package com.hedwig.morpheus.business;
 import com.hedwig.morpheus.EntryPoint;
 import com.hedwig.morpheus.domain.interfaces.IMessageReceiver;
 import com.hedwig.morpheus.domain.interfaces.IServer;
+import com.hedwig.morpheus.service.implementation.BackupMessageService;
 import com.hedwig.morpheus.service.interfaces.IMessageManager;
 import com.hedwig.morpheus.service.interfaces.IModuleManager;
 import com.hedwig.morpheus.service.interfaces.ITopicManager;
@@ -35,6 +36,7 @@ public class Morpheus {
     private final MorpheusWebSocket morpheusWebSocket;
     private final AtomicBoolean reconnectionScheduled;
     private final Timer scheduler;
+    private final BackupMessageService backupMessageService;
 
     private final Logger logger = LoggerFactory.getLogger(EntryPoint.class);
 
@@ -56,14 +58,15 @@ public class Morpheus {
                     ITopicManager topicManager,
                     IServer server,
                     IMessageReceiver messageReceiver,
-                    MorpheusWebSocket morpheusWebSocket) {
+                    MorpheusWebSocket morpheusWebSocket,
+                    BackupMessageService backupMessageService) {
         this.messageManager = messageManager;
         this.moduleManager = moduleManager;
         this.topicManager = topicManager;
         this.server = server;
         this.messageReceiver = messageReceiver;
         this.morpheusWebSocket = morpheusWebSocket;
-
+        this.backupMessageService = backupMessageService;
         this.scheduler = new Timer();
         this.reconnectionScheduled = new AtomicBoolean(false);
     }
@@ -71,6 +74,7 @@ public class Morpheus {
     public void start() {
         if (!connectToServer()) return;
         messageReceiver.processQueue();
+        backupMessageService.startBackupService();
 
         morpheusWebSocket.addDisconnectionListener(disconnectionEvent -> {
             logger.info(String.format(
@@ -169,6 +173,7 @@ public class Morpheus {
     public void shutdown() {
         logger.info("Shutting down Morpheus");
         server.shutdown();
+        backupMessageService.shutdownExecutorService();
         scheduler.cancel();
     }
 

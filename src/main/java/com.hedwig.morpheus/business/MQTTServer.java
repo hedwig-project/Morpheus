@@ -83,6 +83,7 @@ public class MQTTServer implements IServer {
 
     private final MessageQueue incomeMessageQueue;
     private final MessageQueue outputMessageQueue;
+    private final MessageQueue backupMessageQueue;
 
     SSLSocketFactory socketFactory;
 
@@ -91,6 +92,7 @@ public class MQTTServer implements IServer {
     @Autowired
     private MQTTServer(@Qualifier("incomeMessageQueue") MessageQueue incomeMessageQueue,
                        @Qualifier("outputMessageQueue") MessageQueue outputMessageQueue,
+                       @Qualifier("backupMessageQueue") MessageQueue backupMessageQueue,
                        Environment environment,
                        ConversionService conversionService) throws Exception {
 
@@ -100,6 +102,7 @@ public class MQTTServer implements IServer {
 
         this.incomeMessageQueue = incomeMessageQueue;
         this.outputMessageQueue = outputMessageQueue;
+        this.backupMessageQueue = backupMessageQueue;
 
         this.caCertificate = Paths.get(environment.getProperty("mqttServer.certificate.caCertificate"));
         this.serverCertificate = Paths.get(environment.getProperty("mqttServer.certificate.serverCertificate"));
@@ -185,8 +188,9 @@ public class MQTTServer implements IServer {
 
                         @Override
                         public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                            logger.info(String.format("Message %s could not be sent", message.getId()));
-                            // TODO : Resending routine
+                            logger.info(String.format("Message %s could not be sent and was stored in the backup queue",
+                                                      message.getId()));
+                            backupMessageQueue.push(message);
                         }
                     };
 

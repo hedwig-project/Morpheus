@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.service.implementation;
+package com.hedwig.morpheus.util.tools;
 
 import java.util.UUID;
 

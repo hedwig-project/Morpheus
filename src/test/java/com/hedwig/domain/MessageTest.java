@@ -1,6 +1,7 @@
 package com.hedwig.domain;
 
 import com.hedwig.morpheus.EntryPoint;
+import com.hedwig.morpheus.domain.enums.MessageType;
 import com.hedwig.morpheus.domain.implementation.Message;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +23,7 @@ public class MessageTest {
     public void payloadConfigurationMessage() {
         // given
         Message message =
-                new Message("hw/kitchen", Message.MessageType.CONFIGURATION, new Message.MessageBody("new time set"));
+                new Message("hw/kitchen", MessageType.CONFIGURATION, new Message.MessageBody("new time set"));
         message.addControlParameter(new Message.ControlParameter("ts", new Date(new Long("1497209392924")).toString()));
         message.addControlParameter(new Message.ControlParameter("ty", "timeAddition"));
 
@@ -42,7 +43,7 @@ public class MessageTest {
     public void payloadConfigurationMessageWithoutControlParameter() {
         // given
         Message message =
-                new Message("hw/kitchen", Message.MessageType.CONFIGURATION, new Message.MessageBody("new time set"));
+                new Message("hw/kitchen", MessageType.CONFIGURATION, new Message.MessageBody("new time set"));
 
         // when
         String payload = message.toString();
@@ -54,7 +55,7 @@ public class MessageTest {
     @Test
     public void payloadConfigurationMessageWithoutBody() {
         // given
-        Message message = new Message("hw/kitchen", Message.MessageType.CONFIGURATION, new Message.MessageBody(""));
+        Message message = new Message("hw/kitchen", MessageType.CONFIGURATION, new Message.MessageBody(""));
 
         // when
         String payload = message.toString();

@@ -2,7 +2,7 @@ package com.hedwig.morpheus.service.implementation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedwig.morpheus.domain.implementation.Report;
-import com.hedwig.morpheus.util.json.JSONUtilities;
+import com.hedwig.morpheus.util.tools.JSONUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
