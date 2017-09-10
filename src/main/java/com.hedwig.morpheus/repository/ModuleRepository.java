@@ -7,5 +7,5 @@ import org.springframework.data.repository.CrudRepository;
  * Created by hugo. All rights reserved.
  */
 
-public interface ModuleRepository extends CrudRepository<Module, Long> {
+public interface ModuleRepository extends CrudRepository<Module, String> {
 }

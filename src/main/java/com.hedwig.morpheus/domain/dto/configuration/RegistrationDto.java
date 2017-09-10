@@ -5,7 +5,7 @@ package com.hedwig.morpheus.domain.dto.configuration;
  */
 public class RegistrationDto {
 
-    private Long moduleId;
+    private String moduleId;
     private String moduleName;
     private String moduleTopic;
     private String receiveMessagesAtMostEvery;
@@ -14,7 +14,7 @@ public class RegistrationDto {
     public RegistrationDto() {
     }
 
-    public RegistrationDto(Long moduleId,
+    public RegistrationDto(String moduleId,
                            String moduleName,
                            String moduleTopic,
                            String receiveMessagesAtMostEvery,
@@ -27,11 +27,11 @@ public class RegistrationDto {
         this.qos = qos;
     }
 
-    public Long getModuleId() {
+    public String getModuleId() {
         return moduleId;
     }
 
-    public void setModuleId(Long moduleId) {
+    public void setModuleId(String moduleId) {
         this.moduleId = moduleId;
     }
 

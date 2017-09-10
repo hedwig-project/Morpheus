@@ -18,7 +18,7 @@ public class    Module {
     private static final String M_2_S = "m2s";
 
     @Id
-    private Long id;
+    private String id;
     private String name;
     private String topic;
     private QualityOfService qualityOfService;
@@ -27,7 +27,7 @@ public class    Module {
     public Module() {
     }
 
-    public Module(Long id, String name, String topic) {
+    public Module(String id, String name, String topic) {
         this.id = id;
         this.name = name;
         this.topic = topic;
@@ -77,7 +77,7 @@ public class    Module {
         this.qualityOfService = qualityOfService;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
