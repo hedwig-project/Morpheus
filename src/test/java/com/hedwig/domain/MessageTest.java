@@ -9,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,40 +24,48 @@ public class MessageTest {
     @Test
     public void payloadConfigurationMessage() {
         // given
-        Message message =
-                new Message("hw/kitchen", MessageType.CONFIGURATION, new Message.MessageBody("new time set"));
+        Map<String, String> payloadMap = new HashMap<>();
+        payloadMap.put("vl", "5");
+
+        Message message = new Message("hw/kitchen", MessageType.CONFIGURATION, new Message.MessageBody(payloadMap));
         message.addControlParameter(new Message.ControlParameter("ts", new Date(new Long("1497209392924")).toString()));
         message.addControlParameter(new Message.ControlParameter("ty", "timeAddition"));
 
         // when
         String payload = message.toString();
 
+
         //then
-        assertEquals("#configuration\n" +
-                     "$ts:Sun Jun 11 16:29:52 BRT 2017\n" +
-                     "$ty:timeAddition\n" +
-                     "@\n" +
-                     "new time set\n" +
-                     "@\n", payload);
+        String expected = "#configuration\n" +
+                         "$ts:Sun Jun 11 16:29:52 BRT 2017\n" +
+                         "$ty:timeAddition\n" +
+                         "@\n" +
+                         "vl:5\n" +
+                         "@\n";
+
+        assertEquals(expected, payload);
     }
 
     @Test
     public void payloadConfigurationMessageWithoutControlParameter() {
         // given
-        Message message =
-                new Message("hw/kitchen", MessageType.CONFIGURATION, new Message.MessageBody("new time set"));
+        Map<String, String> payloadMap = new HashMap<>();
+        payloadMap.put("vl", "5");
+
+        Message message = new Message("hw/kitchen", MessageType.CONFIGURATION, new Message.MessageBody(payloadMap));
 
         // when
         String payload = message.toString();
 
         //then
-        assertEquals("#configuration\n" + "@\n" + "new time set\n" + "@\n", payload);
+        assertEquals("#configuration\n" + "@\n" + "vl:5\n" + "@\n", payload);
     }
 
     @Test
     public void payloadConfigurationMessageWithoutBody() {
         // given
-        Message message = new Message("hw/kitchen", MessageType.CONFIGURATION, new Message.MessageBody(""));
+        Map<String, String> payloadMap = new HashMap<>();
+        Message message = new Message("hw/kitchen", MessageType.CONFIGURATION, new Message.MessageBody(payloadMap));
 
         // when
         String payload = message.toString();
