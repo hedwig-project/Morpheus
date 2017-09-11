@@ -126,10 +126,10 @@ public class MQTTServer implements IServer {
                                                        this.serverCertificate.toString(),
                                                        this.serverKey.toString());
 
-//        mqttConnectOptions.setSocketFactory(socketFactory);
-
-        mqttConnectOptions.setUserName(serialNumber);
         mqttConnectOptions.setPassword(password.toCharArray());
+        mqttConnectOptions.setUserName(serialNumber);
+
+        mqttConnectOptions.setSocketFactory(socketFactory);
 
         setCallBack();
         startMessageSending();
@@ -168,15 +168,15 @@ public class MQTTServer implements IServer {
         });
     }
 
-//    @Override
-//    public String getConnectionUrl() {
-//        return String.format("ssl://%s:%d", host, port);
-//    }
-
     @Override
     public String getConnectionUrl() {
-        return String.format("tcp://%s:%d", host, port);
+        return String.format("ssl://%s:%d", host, port);
     }
+
+//    @Override
+//    public String getConnectionUrl() {
+//        return String.format("tcp://%s:%d", host, port);
+//    }
 
     @Override
     public void connect() throws MqttException {

@@ -13,13 +13,13 @@ spring:
 
 mqttServer:
   certificate:
-    caCertificate: /home/hugo/Documents/TCC/morpheus/src/main/resources/certificates/ca.crt
-    serverCertificate: /home/hugo/Documents/TCC/morpheus/src/main/resources/certificates/device001.der
-    serverKey: /home/hugo/Documents/TCC/morpheus/src/main/resources/certificates/device001.key
+    caCertificate: /home/hugo/Documents/TCC/mqtt_certificates/ca.crt
+    serverCertificate: /home/hugo/Documents/TCC/mqtt_certificates/morpheus/morpheus.der
+    serverKey: /home/hugo/Documents/TCC/mqtt_certificates/morpheus/morpheus.key
   configuration:
     id: morpheus-localServer
     host: 138.197.83.143
-    port: 1883
+    port: 8883
 
 morpheus:
   configuration:
