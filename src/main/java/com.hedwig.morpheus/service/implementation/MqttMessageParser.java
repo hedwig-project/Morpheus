@@ -6,9 +6,9 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
+import static java.util.Arrays.asList;
 
 /**
  * Created by hugo. All rights reserved.
@@ -24,7 +24,7 @@ public class MqttMessageParser {
     public static Message parse(MqttMessage mqttMessage, String topic) {
         String payload = new String(mqttMessage.getPayload());
 
-        List<String> messageParts = Arrays.asList(payload.split("\n"));
+        List<String> messageParts = asList(payload.split("\n"));
 
         if (messageParts.size() <= 1) {
             logger.error("Invalid message", new IllegalArgumentException("Message does not follow protocol"));
@@ -35,39 +35,55 @@ public class MqttMessageParser {
 
         MessageType messageType = parseMessageType(stringType);
 
-        if(messageType == null) {
+        if (messageType == null) {
             logger.error("Invalid message", new IllegalArgumentException("Message does not follow protocol"));
             return null;
         }
 
         List<Message.ControlParameter> controlParameters = new ArrayList<>();
-
-        StringBuilder body = new StringBuilder();
+        List<String> body = new ArrayList<>();
 
         byte atCharCount = 0;
 
         for (String eachLine : messageParts) {
             if (eachLine.startsWith("$")) {
                 controlParameters.add(parseControlParameter(eachLine));
-            } else if(eachLine.startsWith("@")) {
+            } else if (eachLine.startsWith("@")) {
                 atCharCount++;
             } else if (!eachLine.startsWith("#")) {
-                body.append(eachLine);
+                body.add(eachLine);
             }
         }
 
-        if(atCharCount != 2) {
+        if (atCharCount != 2) {
             logger.error("Invalid message", new IllegalArgumentException("Message does not follow protocol"));
             return null;
         }
 
-        Message message = new Message(topic, messageType, new Message.MessageBody(body.toString()));
+        Map<String, String> payloadMap = getMessagePayloadMap(body);
+
+        Message message = new Message(topic, messageType, new Message.MessageBody(payloadMap));
 
         controlParameters.stream().forEach(p -> message.addControlParameter(p));
 
         logger.info(String.format("Message %s successfully parsed", message.getId()));
 
         return message;
+    }
+
+    private static Map<String, String> getMessagePayloadMap(List<String> messagePayload) {
+        Map<String, String> payloadMap = new HashMap<>();
+        for(String each : messagePayload) {
+            String[] eachLine = each.split(":");
+            if(eachLine == null || eachLine.length != 2) {
+                IllegalArgumentException illegalArgument = new IllegalArgumentException("Invalid message payload");
+                throw illegalArgument;
+            }
+
+            payloadMap.put(eachLine[0], eachLine[1]);
+        }
+
+        return payloadMap;
     }
 
     private static MessageType parseMessageType(String messageType) {

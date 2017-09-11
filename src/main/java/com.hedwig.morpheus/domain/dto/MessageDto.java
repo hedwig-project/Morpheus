@@ -1,14 +1,16 @@
 package com.hedwig.morpheus.domain.dto;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hugo. All rights reserved.
  */
 public class MessageDto implements Serializable {
 
-    private String payload;
+    private Map<String, String> payload;
 
     private String topic;
 
@@ -16,11 +18,12 @@ public class MessageDto implements Serializable {
 
     private List<ControlParameterDto> controlParameters;
 
-    public MessageDto(String payload,
+    public MessageDto(Map<String, String> payload,
                       String topic,
                       String messageType,
                       List<ControlParameterDto> controlParameters) {
-        this.payload = payload;
+        this.payload = new HashMap<>();
+        this.payload.putAll(payload);
         this.topic = topic;
         this.messageType = messageType;
         this.controlParameters = controlParameters;
@@ -53,11 +56,11 @@ public class MessageDto implements Serializable {
         this.messageType = messageType;
     }
 
-    public String getPayload() {
+    public Map<String, String> getPayload() {
         return payload;
     }
 
-    public void setPayload(String payload) {
-        this.payload = payload;
+    public void setPayload(Map<String, String> payload) {
+        this.payload.putAll(payload);
     }
 }

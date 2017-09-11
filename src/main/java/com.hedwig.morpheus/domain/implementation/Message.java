@@ -4,9 +4,7 @@ import com.hedwig.morpheus.domain.enums.MessagePriority;
 import com.hedwig.morpheus.domain.enums.MessageType;
 import com.hedwig.morpheus.domain.enums.QualityOfService;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.hash;
@@ -15,9 +13,9 @@ import static java.util.Objects.hash;
  * Created by hugo. All rights reserved.
  */
 public class Message implements Comparable<Message> {
-    private String id;
     private final MessageType type;
     private final List<ControlParameter> controlParameters;
+    private String id;
     private QualityOfService qosLevel;
     private String topic;
     private MessageBody body;
@@ -105,7 +103,10 @@ public class Message implements Comparable<Message> {
     }
 
     public String toString() {
-        return String.format("#%s\n%s%s", type.toStringRepresentation(), getControlParametersSection(), body.toString());
+        return String.format("#%s\n%s%s",
+                             type.toStringRepresentation(),
+                             getControlParametersSection(),
+                             body.toString());
     }
 
     public boolean equals(Object o) {
@@ -124,23 +125,29 @@ public class Message implements Comparable<Message> {
 
 
     public static class MessageBody {
-        private String payload;
+        private Map<String, String> payload;
 
-        public MessageBody(String payload) {
-            this.payload = payload;
+        public MessageBody(Map<String, String> payload) {
+            this.payload = new HashMap<>();
+            this.payload.putAll(payload);
         }
 
-        public String getPayload() {
+        public Map<String, String> getPayload() {
             return payload;
         }
 
-        public void setPayload(String payload) {
-            this.payload = payload;
+        public void addPayloadEntry(String key, String value) {
+            this.payload.put(key, value);
         }
 
         @Override
         public String toString() {
-            return String.format("@\n%s\n@\n", payload);
+            String values = payload.entrySet()
+                                   .stream()
+                                   .map(each -> String.join(":", each.getKey(), each.getValue()))
+                                   .collect(Collectors.joining("\n"));
+
+            return String.format("@\n%s\n@\n", values);
         }
 
         @Override
