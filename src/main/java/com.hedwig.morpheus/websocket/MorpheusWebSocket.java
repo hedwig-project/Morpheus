@@ -1,5 +1,6 @@
 package com.hedwig.morpheus.websocket;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.hedwig.morpheus.domain.dto.MessageDto;
 import com.hedwig.morpheus.domain.dto.configuration.ConfigurationDto;
@@ -8,6 +9,7 @@ import com.hedwig.morpheus.domain.implementation.MessageQueue;
 import com.hedwig.morpheus.util.listener.DisconnectionListener;
 import com.hedwig.morpheus.util.tools.JSONUtilities;
 import com.hedwig.morpheus.websocket.configurationHandlers.interfaces.IMessageHandler;
+import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.slf4j.Logger;
@@ -162,18 +164,18 @@ public class MorpheusWebSocket {
 //    }
 
     public void sendMessage(Message message) {
-//        try {
-//            socketIO.emit("confirmation", JSONUtilities.serialize(message), new Ack() {
-//                @Override
-//                public void call(Object... args) {
-//                    logger.info(String.format("Message %s sent to cloud", message.getId()));
-//                }
-//            }).on(Socket.EVENT_ERROR, (args) -> {
-//                backupMessageQueue.push(message);
-//            });
-//        } catch (JsonProcessingException e) {
-//            logger.error("Unable to serialize message %d" + message.getId(), e);
-//        }
+        try {
+            socketIO.emit("confirmation", JSONUtilities.serialize(message), new Ack() {
+                @Override
+                public void call(Object... args) {
+                    logger.info(String.format("Message %s sent to cloud", message.getId()));
+                }
+            }).on(Socket.EVENT_ERROR, (args) -> {
+                backupMessageQueue.push(message);
+            });
+        } catch (JsonProcessingException e) {
+            logger.error("Unable to serialize message %d" + message.getId(), e);
+        }
 
 //        double choice = Math.random();
 //        if (choice > 0.4) {
@@ -197,9 +199,9 @@ public class MorpheusWebSocket {
 //                                       message.getId()));
 //            backupMessageQueue.push(message);
 //        }
-
-        logger.error(String.format("Unable to send message with id %s to the cloud. Message sent to backup queue",
-                                   message.getId()));
-        backupMessageQueue.push(message);
+//
+//        logger.error(String.format("Unable to send message with id %s to the cloud. Message sent to backup queue",
+//                                   message.getId()));
+//        backupMessageQueue.push(message);
     }
 }

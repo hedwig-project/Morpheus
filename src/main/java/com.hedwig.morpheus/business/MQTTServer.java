@@ -41,8 +41,10 @@ public class MQTTServer implements IServer {
     private static final int MAX_POOL_SIZE = 10;
 
     private final String id;
-    private final String name;
+    private final String host;
     private final int port;
+    private final String serialNumber;
+    private final String password;
 
     private final MqttAsyncClient mqttAsyncClient;
     private final MqttConnectOptions mqttConnectOptions;
@@ -98,7 +100,9 @@ public class MQTTServer implements IServer {
 
         this.id = environment.getProperty("mqttServer.configuration.id");
         this.port = Integer.parseInt(environment.getProperty("mqttServer.configuration.port"));
-        this.name = environment.getProperty("mqttServer.configuration.name");
+        this.host = environment.getProperty("mqttServer.configuration.host");
+        this.serialNumber = environment.getProperty("morpheus.configuration.serialNumber");
+        this.password = environment.getProperty("morpheus.configuration.password");
 
         this.incomeMessageQueue = incomeMessageQueue;
         this.outputMessageQueue = outputMessageQueue;
@@ -121,6 +125,9 @@ public class MQTTServer implements IServer {
         socketFactory = Securities.createSocketFactory(this.caCertificate.toString(),
                                                        this.serverCertificate.toString(),
                                                        this.serverKey.toString());
+
+        mqttConnectOptions.setPassword(password.toCharArray());
+        mqttConnectOptions.setUserName(serialNumber);
 
         mqttConnectOptions.setSocketFactory(socketFactory);
 
@@ -163,8 +170,13 @@ public class MQTTServer implements IServer {
 
     @Override
     public String getConnectionUrl() {
-        return String.format("ssl://%s:%d", name, port);
+        return String.format("ssl://%s:%d", host, port);
     }
+
+//    @Override
+//    public String getConnectionUrl() {
+//        return String.format("tcp://%s:%d", host, port);
+//    }
 
     @Override
     public void connect() throws MqttException {
