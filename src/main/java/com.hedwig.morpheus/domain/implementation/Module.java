@@ -5,6 +5,7 @@ import com.hedwig.morpheus.domain.enums.QualityOfService;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -12,7 +13,7 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "Module")
-public class    Module {
+public class Module implements Serializable {
 
     private static final String S_2_M = "s2m";
     private static final String M_2_S = "m2s";
@@ -110,14 +111,12 @@ public class    Module {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Module module = (Module) o;
-        return Objects.equals(id, module.id) &&
-               Objects.equals(name, module.name) &&
-               Objects.equals(topic, module.topic);
+        return Objects.equals(name, module.name) && Objects.equals(topic, module.topic);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, topic);
+        return Objects.hash(name, topic);
     }
 
     @Override

@@ -26,6 +26,7 @@ morpheus:
     keepAlive: 10000
     serialNumber: adf654wae84fea5d8ea6
     password: 123456789
+    directory: /home/hugo/Documents/TCC/configuration
     backup:
       numberOfResendTries: 5
       directory: /home/hugo/Documents/TCC/morpheusMessageBackup

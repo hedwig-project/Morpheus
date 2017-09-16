@@ -1,9 +1,11 @@
 package com.hedwig.morpheus.domain.enums;
 
+import java.io.Serializable;
+
 /**
  * Created by hugo. All rights reserved.
  */
-public enum QualityOfService {
+public enum QualityOfService implements Serializable {
     FIRST_LEVEL(1), SECOND_LEVEL(2), THIRD_LEVEL(3);
 
     private final int qosLevel;

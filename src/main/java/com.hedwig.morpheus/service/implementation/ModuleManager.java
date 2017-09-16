@@ -27,17 +27,20 @@ public class ModuleManager implements IModuleManager {
     private final ITopicManager topicManager;
     private final ModuleRepository moduleRepository;
     private final ConfigurationReporter configurationReporter;
+    private final ConfigurationPersister configurationPersister;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public ModuleManager(ITopicManager topicManager,
                          ModuleRepository moduleRepository,
-                         ConfigurationReporter configurationReporter) {
+                         ConfigurationReporter configurationReporter,
+                         ConfigurationPersister configurationPersister) {
         this.modules = new ArrayList<>();
         this.topicManager = topicManager;
         this.moduleRepository = moduleRepository;
         this.configurationReporter = configurationReporter;
+        this.configurationPersister = configurationPersister;
     }
 
     @Override
@@ -65,12 +68,17 @@ public class ModuleManager implements IModuleManager {
             modules.add(module);
             result.setSuccess(true);
             result.setDescription(String.format("Module %s registered successfully", module.getName()));
+            updateConfigurationPersister(module);
             return result;
         }
 
         logger.error(String.format("Module %s failed to be registered", module.getName()));
         result.setDescription(subscribedToTopic.getDescription());
         return result;
+    }
+
+    private void updateConfigurationPersister(Module module) {
+        configurationPersister.updateModulesList(module);
     }
 
     @Override
@@ -106,6 +114,7 @@ public class ModuleManager implements IModuleManager {
                     iterator.remove();
                     result.setSuccess(true);
                     result.setDescription(String.format("Module %s removed successfully", module.getName()));
+                    updateConfigurationPersister(module);
                     return result;
                 } else {
                     logger.error(String.format("Module %s failed to be removed", module.getName()));

@@ -8,7 +8,7 @@ import com.hedwig.morpheus.domain.implementation.Message;
 import com.hedwig.morpheus.domain.implementation.MessageQueue;
 import com.hedwig.morpheus.util.listener.DisconnectionListener;
 import com.hedwig.morpheus.util.tools.JSONUtilities;
-import com.hedwig.morpheus.websocket.configurationHandlers.interfaces.IMessageHandler;
+import com.hedwig.morpheus.websocket.messageHandlers.interfaces.IMessageHandler;
 import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -134,6 +134,22 @@ public class MorpheusWebSocket {
 
     public void connect() throws URISyntaxException {
         socketIO.connect();
+        sendHelloEvent();
+    }
+
+    private void sendHelloEvent() {
+        socketIO.emit("hello", morpheusSerialNumber, (Ack) args -> {
+            if (null != args && args.length > 0) {
+                switch (args[0].toString().toLowerCase()) {
+                    case "ok":
+                        logger.info(String.format("Cloud has received morpheus serial number"));
+                        break;
+                    default:
+                        logger.error("Cloud has not received morpheus serial number");
+                }
+            }
+
+        });
     }
 
     public synchronized void addDisconnectionListener(DisconnectionListener disconnectionListener) {
@@ -152,7 +168,7 @@ public class MorpheusWebSocket {
             connectedToCloud.set(false);
         }).on(Socket.EVENT_ERROR, (args) -> {
             logger.error("ERROR HERE");
-        });
+        }).on(Socket.EVENT_RECONNECT, (args) -> sendHelloEvent());
     }
 
     public boolean isConnected() {
@@ -173,21 +189,18 @@ public class MorpheusWebSocket {
         String eventType = getEventType(message);
 
         try {
-            socketIO.emit(eventType, JSONUtilities.serialize(messageDto), new Ack() {
-                @Override
-                public void call(Object... args) {
-                    if (null != args && args.length > 0) {
-                        switch (args[0].toString().toLowerCase()) {
-                            case "ok":
-                                logger.info(String.format("Message %s sent to cloud", messageDto.getMessageId()));
-                                break;
-                            default:
-                                logger.error(String.format("Failed to send message %s to cloud",
-                                                           messageDto.getMessageId()));
-                        }
+            socketIO.emit(eventType, JSONUtilities.serialize(messageDto), (Ack) args -> {
+                if (null != args && args.length > 0) {
+                    switch (args[0].toString().toLowerCase()) {
+                        case "ok":
+                            logger.info(String.format("Message %s sent to cloud", messageDto.getMessageId()));
+                            break;
+                        default:
+                            logger.error(String.format("Failed to send message %s to cloud",
+                                                       messageDto.getMessageId()));
                     }
-
                 }
+
             });
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -204,7 +217,7 @@ public class MorpheusWebSocket {
                 eventType = "configuration";
                 break;
             case DATA_TRANSMISSION:
-                eventType = "dataTransmission";
+                eventType = "data";
                 break;
             default:
                 throw new IllegalStateException(String.format("Message %s has invalid state", message.getId()));
