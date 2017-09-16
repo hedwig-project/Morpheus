@@ -15,6 +15,7 @@ public class MessageToMessageDtoConverter implements Converter<Message, MessageD
     @Override
     public MessageDto convert(Message source) {
         MessageDto messageDto = new MessageDto();
+        messageDto.setMessageId(source.getId());
         messageDto.setTopic(source.getTopic());
         messageDto.setMessageType(source.getType().toStringRepresentation());
         messageDto.setPayload(source.getBody().getPayload());

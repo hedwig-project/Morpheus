@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,7 @@ public class MorpheusWebSocket {
     private final List<DisconnectionListener> disconnectionListeners;
     private final IMessageHandler messageHandler;
     private final MessageQueue backupMessageQueue;
+    private final ConversionService conversionService;
 
     private final String url;
     private final String protocol;
@@ -50,8 +52,10 @@ public class MorpheusWebSocket {
     @Autowired
     public MorpheusWebSocket(Environment environment,
                              IMessageHandler messageHandler,
-                             @Qualifier("backupMessageQueue") MessageQueue backupMessageQueue)
-            throws URISyntaxException {
+                             @Qualifier("backupMessageQueue") MessageQueue backupMessageQueue,
+                             ConversionService conversionService) throws URISyntaxException {
+        this.conversionService = conversionService;
+
         protocol = environment.getProperty("cloud.protocol");
         host = environment.getProperty("cloud.host");
         port = environment.getProperty("cloud.port");
@@ -98,8 +102,8 @@ public class MorpheusWebSocket {
 
         socketIO.on("actionRequest", args -> {
             try {
-                logger.info("A new actionRequest message has arrived");
                 if (args.length == 0) return;
+                logger.info("A new actionRequest message has arrived");
                 List<MessageDto> messageDtoList =
                         JSONUtilities.deserialize((String) args[0], new TypeReference<List<MessageDto>>() {
                         });
@@ -109,17 +113,17 @@ public class MorpheusWebSocket {
             }
         });
 
-        socketIO.on("dataTransmission", args -> {
-//            try {
-//                logger.info("A new dataTransmission message has arrived");
-//                if (args.length == 0) return;
-//                List<MessageDto> messageDtoList =
-//                        JSONUtilities.deserialize((String) args[0], new TypeReference<List<MessageDto>>() {
-//                        });
-//                messageHandler.inputDataTransmission(messageDtoList);
-//            } catch (IOException e) {
-//                logger.error("Unable to deserialize dataTransmission message", e);
-//            }
+        socketIO.on("dataTransmission", (Object... args) -> {
+            try {
+                if (args.length == 0) return;
+                logger.info("A new dataTransmission message has arrived");
+                List<MessageDto> messageDtoList =
+                        JSONUtilities.deserialize((String) args[0], new TypeReference<List<MessageDto>>() {
+                        });
+                messageHandler.inputDataTransmission(messageDtoList);
+            } catch (IOException e) {
+                logger.error("Unable to deserialize dataTransmission message", e);
+            }
         });
     }
 
@@ -146,6 +150,8 @@ public class MorpheusWebSocket {
         }).on(Socket.EVENT_CONNECT_ERROR, args -> {
             logger.error("Error when trying to connect to cloud. Trying again.");
             connectedToCloud.set(false);
+        }).on(Socket.EVENT_ERROR, (args) -> {
+            logger.error("ERROR HERE");
         });
     }
 
@@ -153,55 +159,57 @@ public class MorpheusWebSocket {
         return connectedToCloud.get();
     }
 
-//    private void fireDisconnectionEvent(String cause) {
-//        synchronized (disconnectionListeners) {
-//            DisconnectionEvent disconnectionEvent = new DisconnectionEvent(this, cause);
-//            Iterator listeners = disconnectionListeners.iterator();
-//            while (listeners.hasNext()) {
-//                ((DisconnectionListener) listeners.next()).disconnectionReceived(disconnectionEvent);
-//            }
-//        }
-//    }
-
     public void sendMessage(Message message) {
+        if (socketIO.connected()) {
+            prepareMessage(message);
+        } else {
+            logger.error("Morpheus is disconnected. Trying again");
+            backupMessageQueue.push(message);
+        }
+    }
+
+    private void prepareMessage(Message message) {
+        MessageDto messageDto = conversionService.convert(message, MessageDto.class);
+        String eventType = getEventType(message);
+
         try {
-            socketIO.emit("confirmation", JSONUtilities.serialize(message), new Ack() {
+            socketIO.emit(eventType, JSONUtilities.serialize(messageDto), new Ack() {
                 @Override
                 public void call(Object... args) {
-                    logger.info(String.format("Message %s sent to cloud", message.getId()));
+                    if (null != args && args.length > 0) {
+                        switch (args[0].toString().toLowerCase()) {
+                            case "ok":
+                                logger.info(String.format("Message %s sent to cloud", messageDto.getMessageId()));
+                                break;
+                            default:
+                                logger.error(String.format("Failed to send message %s to cloud",
+                                                           messageDto.getMessageId()));
+                        }
+                    }
+
                 }
-            }).on(Socket.EVENT_ERROR, (args) -> {
-                backupMessageQueue.push(message);
             });
         } catch (JsonProcessingException e) {
-            logger.error("Unable to serialize message %d" + message.getId(), e);
+            e.printStackTrace();
+        }
+    }
+
+    private String getEventType(Message message) {
+        String eventType;
+        switch (message.getType()) {
+            case CONFIRMATION:
+                eventType = "confirmation";
+                break;
+            case CONFIGURATION:
+                eventType = "configuration";
+                break;
+            case DATA_TRANSMISSION:
+                eventType = "dataTransmission";
+                break;
+            default:
+                throw new IllegalStateException(String.format("Message %s has invalid state", message.getId()));
         }
 
-//        double choice = Math.random();
-//        if (choice > 0.4) {
-//            try {
-//                socketIO.emit("confirmation", JSONUtilities.serialize(message), new Ack() {
-//                    @Override
-//                    public void call(Object... args) {
-//                        logger.info(String.format("Message %s sent to cloud", message.getId()));
-//                    }
-//                }).on(Socket.EVENT_ERROR, (args) -> {
-//                    logger.error(String.format(
-//                            "1- Unable to send message with id %s to the cloud. Message sent to backup queue",
-//                            message.getId()));
-//                    backupMessageQueue.push(message);
-//                });
-//            } catch (JsonProcessingException e) {
-//                logger.error("Unable to serialize message %d" + message.getId(), e);
-//            }
-//        } else {
-//            logger.error(String.format("2- Unable to send message with id %s to the cloud. Message sent to backup queue",
-//                                       message.getId()));
-//            backupMessageQueue.push(message);
-//        }
-//
-//        logger.error(String.format("Unable to send message with id %s to the cloud. Message sent to backup queue",
-//                                   message.getId()));
-//        backupMessageQueue.push(message);
+        return eventType;
     }
 }

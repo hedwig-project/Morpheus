@@ -10,6 +10,8 @@ import java.util.Map;
  */
 public class MessageDto implements Serializable {
 
+    private String messageId;
+
     private Map<String, String> payload;
 
     private String topic;
@@ -30,6 +32,15 @@ public class MessageDto implements Serializable {
     }
 
     public MessageDto() {
+        payload = new HashMap<>();
+    }
+
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
     }
 
     public List<ControlParameterDto> getControlParameters() {
