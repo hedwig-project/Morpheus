@@ -1,4 +1,4 @@
-package com.hedwig.morpheus.websocket.configurationHandlers.interfaces;
+package com.hedwig.morpheus.websocket.messageHandlers.interfaces;
 
 import com.hedwig.morpheus.domain.dto.MessageDto;
 import com.hedwig.morpheus.domain.dto.configuration.ConfigurationDto;

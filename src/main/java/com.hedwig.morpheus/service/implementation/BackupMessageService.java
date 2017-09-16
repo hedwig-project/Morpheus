@@ -108,6 +108,7 @@ public class BackupMessageService {
                 return new ArrayList<>();
             }
 
+            fileToPersist.delete();
             return readMessages;
         } catch (IOException e) {
             logger.error("Unable to create input stream", e);

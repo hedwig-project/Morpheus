@@ -2,7 +2,7 @@ package com.hedwig.morpheus.rest;
 
 import com.hedwig.morpheus.domain.dto.MessageDto;
 import com.hedwig.morpheus.domain.dto.configuration.ConfigurationDto;
-import com.hedwig.morpheus.websocket.configurationHandlers.MessageHandler;
+import com.hedwig.morpheus.websocket.messageHandlers.MessageHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
