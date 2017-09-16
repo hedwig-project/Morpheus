@@ -145,7 +145,6 @@ public class MQTTServer implements IServer {
 
             @Override
             public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-                // TODO : Make actual parsing of the message
                 receiversThreadPool.execute(() -> {
                     logger.info("New message received from module: " + topic);
 
@@ -278,36 +277,4 @@ public class MQTTServer implements IServer {
 
         return result;
     }
-
-//    @Override
-//    public void subscribe(String topic, Runnable successfullySubscribed, Runnable failureInSubscription) {
-//        try {
-//            mqttAsyncClient.subscribe(topic, 0, null, new IMqttActionListener() {
-//                @Override
-//                public void onSuccess(IMqttToken asyncActionToken) {
-//                    successfullySubscribed.run();
-//                }
-//
-//                @Override
-//                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-//                    failureInSubscription.run();
-//                }
-//            });
-//        } catch (MqttException e) {
-//            logger.error("Error in subscription", e);
-//        }
-//    }
-
-//    @Override
-//    public boolean unsubscribe(String topic) {
-//        try {
-//            IMqttToken token = mqttAsyncClient.unsubscribe(topic);
-//            token.waitForCompletion();
-//            return token.getResponse().toString().equals("UNSUBACK msgId 4");
-//        } catch (MqttException e) {
-//            logger.error("Error in subscription", e);
-//        }
-//
-//        return false;
-//    }
 }

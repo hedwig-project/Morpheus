@@ -47,36 +47,7 @@ public class Cloud {
         this.morpheusWebSocket = morpheusWebSocket;
     }
 
-    // TODO : Actually send messages to cloud
-
     public void sendMessageToCloud(Message message) {
         morpheusWebSocket.sendMessage(message);
     }
-
-//    private void sendMessageToCloud(String urlString, String message, String logMessage) {
-//        try {
-//            URL url = new URL(urlString);
-//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//            connection.setDoOutput(true);
-//            connection.setRequestMethod("POST");
-//            DataOutputStream write = new DataOutputStream(connection.getOutputStream());
-//            write.writeBytes(message);
-//            write.flush();
-//            write.close();
-//
-//            int responseCode = connection.getResponseCode();
-//
-//            switch (responseCode) {
-//                case 200:
-//                    logger.info(logMessage);
-//                    break;
-//                default:
-//                    logger.error(String.format("Request to API returned with code %d", responseCode));
-//            }
-//
-//        } catch (IOException e) {
-//            logger.error("Could not open connection", e);
-//        }
-//    }
-
 }
