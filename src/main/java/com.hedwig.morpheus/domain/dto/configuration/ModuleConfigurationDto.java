@@ -8,7 +8,7 @@ import java.util.List;
  * Created by hugo. All rights reserved.
  */
 public class ModuleConfigurationDto {
-    private Long moduleId;
+    private String moduleId;
     private String moduleName;
     private String moduleTopic;
     private Boolean unregister;
@@ -17,7 +17,7 @@ public class ModuleConfigurationDto {
     public ModuleConfigurationDto() {
     }
 
-    public ModuleConfigurationDto(Long moduleId,
+    public ModuleConfigurationDto(String moduleId,
                                   String moduleName,
                                   String moduleTopic,
                                   Boolean unregister,
@@ -29,11 +29,11 @@ public class ModuleConfigurationDto {
         this.messages = messages;
     }
 
-    public Long getModuleId() {
+    public String getModuleId() {
         return moduleId;
     }
 
-    public void setModuleId(Long moduleId) {
+    public void setModuleId(String moduleId) {
         this.moduleId = moduleId;
     }
 

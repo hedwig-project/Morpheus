@@ -109,12 +109,11 @@ public class ModuleManager implements IModuleManager {
             if (found) {
                 Result unsubscribed = topicManager.unsubscribe(module.getSubscribeToTopic());
                 if (unsubscribed.isSuccess()) {
-                    moduleRepository.delete(module.getId());
                     logger.info(String.format("Module %s removed successfully", module.getName()));
                     iterator.remove();
                     result.setSuccess(true);
                     result.setDescription(String.format("Module %s removed successfully", module.getName()));
-                    updateConfigurationPersister(module);
+                    removeModuleFromConfigurationPersister(module);
                     return result;
                 } else {
                     logger.error(String.format("Module %s failed to be removed", module.getName()));
@@ -129,6 +128,10 @@ public class ModuleManager implements IModuleManager {
         result.setSuccess(false);
         result.setDescription("Module not found");
         return result;
+    }
+
+    private void removeModuleFromConfigurationPersister(Module module) {
+        configurationPersister.removeModule(module);
     }
 
     @Override

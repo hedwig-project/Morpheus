@@ -172,11 +172,6 @@ public class MQTTServer implements IServer {
         return String.format("ssl://%s:%d", host, port);
     }
 
-//    @Override
-//    public String getConnectionUrl() {
-//        return String.format("tcp://%s:%d", host, port);
-//    }
-
     @Override
     public void connect() throws MqttException {
         mqttConnectToken = mqttAsyncClient.connect(mqttConnectOptions, null, null);
