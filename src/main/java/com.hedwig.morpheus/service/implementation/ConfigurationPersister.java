@@ -84,4 +84,9 @@ public class ConfigurationPersister {
             logger.error("Could not deserialize objects", e);
         }
     }
+
+    public void removeModule(Module module) {
+        modules.remove(module);
+        persistModules();
+    }
 }

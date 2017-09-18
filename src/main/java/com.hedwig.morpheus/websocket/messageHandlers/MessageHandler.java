@@ -108,13 +108,12 @@ public class MessageHandler implements IMessageHandler {
             logger.warn("Invalid request message");
         }
 
-//        TODO : Register uniqueID
+        messageDto.setMessageType(type.toStringRepresentation());
         if (!validateMessage(messageDto)) {
             logger.error("Invalid message");
             return;
         }
 
-        messageDto.setMessageType(type.toStringRepresentation());
 
         Message convertedMessage = conversionService.convert(messageDto, Message.class);
         if (null == convertedMessage) {
@@ -122,7 +121,18 @@ public class MessageHandler implements IMessageHandler {
             return;
         }
 
+        String topicWithS2MEnding = getS2MTopic(convertedMessage.getTopic());
+        convertedMessage.setTopic(topicWithS2MEnding);
+
         sendMessageToBroker(convertedMessage);
+    }
+
+    private String getS2MTopic(String topic) {
+        if (topic.endsWith("/s2m")) {
+            return topic;
+        }
+
+        return topic + "/s2m";
     }
 
     private void makeModulesConfiguration(List<ModuleConfigurationDto> modulesConfiguration, UUID uuid) {
@@ -144,7 +154,7 @@ public class MessageHandler implements IMessageHandler {
             return;
         }
 
-        Long moduleId = moduleConfiguration.getModuleId();
+        String moduleId = moduleConfiguration.getModuleId();
         String moduleName = moduleConfiguration.getModuleName();
         String moduleTopic = moduleConfiguration.getModuleTopic();
 
@@ -155,24 +165,7 @@ public class MessageHandler implements IMessageHandler {
 
         Boolean unregister = moduleConfiguration.getUnregister();
         if (unregister != null && unregister) {
-            Result result = moduleManager.removeModuleByTopic(moduleTopic);
-            if (result.isSuccess()) {
-                logger.info(String.format("Module %s removed successfully", moduleName));
-                Report report = new Report().reportIdentification(moduleId.toString())
-                                            .reportType(ReportingType.MODULE_REMOVAL)
-                                            .reportResult(ReportingResult.REMOVED)
-                                            .reportDescription("Module removed successfully");
-                configurationReporter.addReport(uuid, report);
-
-            } else {
-                logger.info(String.format("Not possible to remove module %s", moduleName));
-                Report report = new Report().reportIdentification(moduleId.toString())
-                                            .reportType(ReportingType.MODULE_REMOVAL)
-                                            .reportResult(ReportingResult.FAILED)
-                                            .reportDescription(result.getDescription());
-                configurationReporter.addReport(uuid, report);
-            }
-
+            removeModule(uuid, moduleId, moduleTopic);
             return;
         }
 
@@ -190,7 +183,25 @@ public class MessageHandler implements IMessageHandler {
         }
     }
 
-    private void assembleMessage(MessageDto message, Long moduleId, String moduleName, String topic) {
+    private void removeModule(UUID uuid, String moduleId, String moduleTopic) {
+        Result result = moduleManager.removeModuleByTopic(moduleTopic);
+        if (result.isSuccess()) {
+            Report report = new Report().reportIdentification(moduleId)
+                                        .reportType(ReportingType.MODULE_REMOVAL)
+                                        .reportResult(ReportingResult.REMOVED)
+                                        .reportDescription("Module removed successfully");
+            configurationReporter.addReport(uuid, report);
+
+        } else {
+            Report report = new Report().reportIdentification(moduleId)
+                                        .reportType(ReportingType.MODULE_REMOVAL)
+                                        .reportResult(ReportingResult.FAILED)
+                                        .reportDescription(result.getDescription());
+            configurationReporter.addReport(uuid, report);
+        }
+    }
+
+    private void assembleMessage(MessageDto message, String moduleId, String moduleName, String topic) {
         message.setTopic(topic);
         message.setMessageType("configuration");
 
