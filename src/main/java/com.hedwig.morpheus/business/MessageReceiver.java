@@ -49,9 +49,6 @@ public class MessageReceiver implements IMessageReceiver {
 
     @Override
     public void processIncomeMessage(Message message) {
-
-//        TODO : Save messages to database
-
         switch (message.getType()) {
             case CONFIRMATION:
             case DATA_TRANSMISSION:

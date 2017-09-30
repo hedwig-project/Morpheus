@@ -8,6 +8,7 @@ import com.hedwig.morpheus.domain.implementation.Message;
 import com.hedwig.morpheus.domain.implementation.MessageQueue;
 import com.hedwig.morpheus.util.listener.DisconnectionListener;
 import com.hedwig.morpheus.util.tools.JSONUtilities;
+import com.hedwig.morpheus.util.tools.MessageAgeVerifier;
 import com.hedwig.morpheus.websocket.messageHandlers.interfaces.IMessageHandler;
 import io.socket.client.Ack;
 import io.socket.client.IO;
@@ -47,14 +48,17 @@ public class MorpheusWebSocket {
     private final String host;
     private final String port;
     private final String morpheusSerialNumber;
+    private final MessageAgeVerifier messageAgeVerifier;
 
 
     @Autowired
     public MorpheusWebSocket(Environment environment,
                              IMessageHandler messageHandler,
                              @Qualifier("backupMessageQueue") MessageQueue backupMessageQueue,
-                             ConversionService conversionService) throws URISyntaxException {
+                             ConversionService conversionService,
+                             MessageAgeVerifier messageAgeVerifier) throws URISyntaxException {
         this.conversionService = conversionService;
+        this.messageAgeVerifier = messageAgeVerifier;
 
         protocol = environment.getProperty("cloud.protocol");
         host = environment.getProperty("cloud.host");
@@ -93,8 +97,10 @@ public class MorpheusWebSocket {
             try {
                 logger.info("A new configuration message arrived");
                 ConfigurationDto configurationDto = JSONUtilities.deserialize((String) args[0], ConfigurationDto.class);
+
                 String report = messageHandler.inputConfiguration(configurationDto);
                 sendConfirmationReport(report);
+
             } catch (IOException e) {
                 logger.error("Unable to deserialize configuration message", e);
             }
@@ -132,15 +138,30 @@ public class MorpheusWebSocket {
         logger.info("Configuration Report sent to cloud");
     }
 
-    public void connect() throws URISyntaxException {
-        socketIO.connect();
-        sendHelloEvent();
+    private void addConnectionRelatedListenersToWebSocket() {
+        socketIO.on(Socket.EVENT_CONNECT, args -> {
+            logger.info("Connection with cloud established successfully.");
+            connectedToCloud.set(true);
+        })
+                .on(Socket.EVENT_DISCONNECT, args -> {
+                    logger.warn("Morpheus disconnected from the cloud. Reconnecting.");
+                    connectedToCloud.set(false);
+                })
+                .on(Socket.EVENT_CONNECT_ERROR, args -> {
+                    logger.error("Error when trying to connect to cloud. Trying again.");
+                    connectedToCloud.set(false);
+                })
+                .on(Socket.EVENT_ERROR, (args) -> {
+                    logger.error("ERROR HERE");
+                })
+                .on(Socket.EVENT_RECONNECT, (args) -> sendHelloEvent());
     }
 
     private void sendHelloEvent() {
         socketIO.emit("hello", morpheusSerialNumber, (Ack) args -> {
             if (null != args && args.length > 0) {
-                switch (args[0].toString().toLowerCase()) {
+                switch (args[0].toString()
+                               .toLowerCase()) {
                     case "ok":
                         logger.info(String.format("Cloud has received morpheus serial number"));
                         break;
@@ -152,23 +173,13 @@ public class MorpheusWebSocket {
         });
     }
 
-    public synchronized void addDisconnectionListener(DisconnectionListener disconnectionListener) {
-        disconnectionListeners.add(disconnectionListener);
+    public void connect() throws URISyntaxException {
+        socketIO.connect();
+        sendHelloEvent();
     }
 
-    private void addConnectionRelatedListenersToWebSocket() {
-        socketIO.on(Socket.EVENT_CONNECT, args -> {
-            logger.info("Connection with cloud established successfully.");
-            connectedToCloud.set(true);
-        }).on(Socket.EVENT_DISCONNECT, args -> {
-            logger.warn("Morpheus disconnected from the cloud. Reconnecting.");
-            connectedToCloud.set(false);
-        }).on(Socket.EVENT_CONNECT_ERROR, args -> {
-            logger.error("Error when trying to connect to cloud. Trying again.");
-            connectedToCloud.set(false);
-        }).on(Socket.EVENT_ERROR, (args) -> {
-            logger.error("ERROR HERE");
-        }).on(Socket.EVENT_RECONNECT, (args) -> sendHelloEvent());
+    public synchronized void addDisconnectionListener(DisconnectionListener disconnectionListener) {
+        disconnectionListeners.add(disconnectionListener);
     }
 
     public boolean isConnected() {
@@ -188,10 +199,16 @@ public class MorpheusWebSocket {
         MessageDto messageDto = conversionService.convert(message, MessageDto.class);
         String eventType = getEventType(message);
 
+        if (messageAgeVerifier.isMessageTooOld(message)) {
+            logger.warn(String.format("Message %s is too old and will be discarded", message.getId()));
+            return;
+        }
+
         try {
             socketIO.emit(eventType, JSONUtilities.serialize(messageDto), (Ack) args -> {
                 if (null != args && args.length > 0) {
-                    switch (args[0].toString().toLowerCase()) {
+                    switch (args[0].toString()
+                                   .toLowerCase()) {
                         case "ok":
                             logger.info(String.format("Message %s sent to cloud", messageDto.getMessageId()));
                             break;

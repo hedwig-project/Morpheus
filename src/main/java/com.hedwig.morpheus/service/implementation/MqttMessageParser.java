@@ -125,6 +125,6 @@ public class MqttMessageParser {
             return null;
         }
 
-        return new Message.ControlParameter(controlArray[0], controlArray[1]);
+        return new Message.ControlParameter(controlArray[0].substring(1), controlArray[1]);
     }
 }
