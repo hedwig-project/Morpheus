@@ -30,7 +30,6 @@ public class MessagingApi {
 
     @RequestMapping(path = EndpointAddresses.CONFIGURATION, method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<String> configurationMessage(@RequestBody ConfigurationDto configuration) {
-
         messageHandler.inputConfiguration(configuration);
         return new ResponseEntity<>("configuration message received", HttpStatus.OK);
     }

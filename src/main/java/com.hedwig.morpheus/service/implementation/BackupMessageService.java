@@ -100,6 +100,11 @@ public class BackupMessageService {
             return new ArrayList<>();
         }
         try (FileInputStream fileInputStream = new FileInputStream(fileToPersist)) {
+            if(fileInputStream.available() == 0) {
+                logger.info(String.format("Empty file of persisted message"));
+                return Collections.emptyList();
+            }
+
             final ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             readMessages = (List<MessageDto>) objectInputStream.readObject();
             logger.info(String.format("A total of %d messages were read from file", readMessages.size()));

@@ -14,12 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Scope("singleton")
 public class MessageManager implements IMessageManager {
-
-    // TODO : Parse messages from module
-    // TODO : Make message queue
-
     private final IMessageSender messageSender;
-
 
     @Autowired
     public MessageManager(IMessageSender messageSender) {

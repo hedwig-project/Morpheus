@@ -32,6 +32,9 @@ morpheus:
       directory: /home/hugo/Documents/TCC/morpheusMessageBackup
       persistEvery: 20000
       fileName: backupMessages.txt
+    messages:
+      discardOldMessages: true
+      discardMessagesAfter: 60
 
 cloud:
   protocol: http
