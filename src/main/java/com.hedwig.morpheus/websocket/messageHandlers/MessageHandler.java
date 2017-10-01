@@ -67,17 +67,6 @@ public class MessageHandler implements IMessageHandler {
     public String inputConfiguration(ConfigurationDto configurationDto) {
         UUID uuid = UUIDGenerator.generateUUId();
 
-        if (messageAgeVerifier.isMessageTooOld(configurationDto)) {
-            logger.warn(String.format("Configuration message %s is too old and will be discarded",
-                                      configurationDto.getConfigurationId()));
-
-            Report report = new Report().reportType(ReportingType.OLD_MESSAGE)
-                                        .reportResult(ReportingResult.FAILED)
-                                        .reportDescription("The configuration message was too old and was discarded");
-
-            configurationReporter.addReport(uuid, report);
-        }
-
         if (null == configurationDto) {
             Report report = new Report().reportType(ReportingType.EMPTY_PARAMETERS)
                                         .reportResult(ReportingResult.FAILED)
@@ -88,6 +77,15 @@ public class MessageHandler implements IMessageHandler {
             logger.error("Configuration message did not follow the protocol",
                          new InvalidParameterException("Invalid configuration message"));
 
+        } else if (messageAgeVerifier.isMessageTooOld(configurationDto)) {
+            logger.warn(String.format("Configuration message %s is too old and will be discarded",
+                                      configurationDto.getConfigurationId()));
+
+            Report report = new Report().reportType(ReportingType.OLD_MESSAGE)
+                                        .reportResult(ReportingResult.FAILED)
+                                        .reportDescription("The configuration message was too old and was discarded");
+
+            configurationReporter.addReport(uuid, report);
         } else {
             makeMorpheusConfiguration(configurationDto.getMorpheusConfiguration(), uuid);
             makeModulesConfiguration(configurationDto.getModulesConfiguration(), uuid);
