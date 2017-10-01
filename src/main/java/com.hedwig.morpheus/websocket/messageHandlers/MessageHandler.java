@@ -264,7 +264,7 @@ public class MessageHandler implements IMessageHandler {
 
     private void processMessage(MessageDto messageDto, MessageType type) {
         if (messageAgeVerifier.isMessageTooOld(messageDto)) {
-            logger.warn(String.format("Message %s is too old", messageDto.getMessageId()));
+            logger.warn(String.format("Message is too old and will be discarded"));
             return;
         }
 

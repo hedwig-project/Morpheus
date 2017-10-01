@@ -13,6 +13,7 @@ import com.hedwig.morpheus.websocket.messageHandlers.interfaces.IMessageHandler;
 import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -158,7 +159,12 @@ public class MorpheusWebSocket {
     }
 
     private void sendHelloEvent() {
-        socketIO.emit("hello", morpheusSerialNumber, (Ack) args -> {
+
+        JSONObject morpheusHello = new JSONObject();
+        morpheusHello.put("morpheusId", morpheusSerialNumber);
+        morpheusHello.put("type", "morpheus");
+
+        socketIO.emit("hello", morpheusHello.toString(), (Ack) args -> {
             if (null != args && args.length > 0) {
                 switch (args[0].toString()
                                .toLowerCase()) {
