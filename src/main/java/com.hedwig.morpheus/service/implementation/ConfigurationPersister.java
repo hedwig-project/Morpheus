@@ -67,6 +67,8 @@ public class ConfigurationPersister {
             } catch (IOException e) {
                 logger.error("Unable to create output stream", e);
             }
+        } else {
+            file.delete();
         }
     }
 
