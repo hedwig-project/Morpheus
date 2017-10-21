@@ -91,13 +91,12 @@ public class MorpheusWebSocket {
         this.backupMessageQueue = backupMessageQueue;
     }
 
-//    TODO : Make multithreaded tests here
-
     private void addMessageListeners() {
-        socketIO.on("configurationMessage", args -> {
+        socketIO.on("configuration", args -> {
             try {
+                if (args.length <= 3) return;
                 logger.info("A new configuration message arrived");
-                ConfigurationDto configurationDto = JSONUtilities.deserialize((String) args[0], ConfigurationDto.class);
+                ConfigurationDto configurationDto = JSONUtilities.deserialize((String) args[2], ConfigurationDto.class);
 
                 String report = messageHandler.inputConfiguration(configurationDto);
                 sendConfirmationReport(report);
@@ -107,12 +106,12 @@ public class MorpheusWebSocket {
             }
         });
 
-        socketIO.on("actionRequest", args -> {
+        socketIO.on("action", args -> {
             try {
-                if (args.length == 0) return;
+                if (args.length <= 3) return;
                 logger.info("A new actionRequest message has arrived");
                 List<MessageDto> messageDtoList =
-                        JSONUtilities.deserialize((String) args[0], new TypeReference<List<MessageDto>>() {
+                        JSONUtilities.deserialize((String) args[2], new TypeReference<List<MessageDto>>() {
                         });
                 messageHandler.inputActionRequest(messageDtoList);
             } catch (IOException e) {
@@ -120,12 +119,12 @@ public class MorpheusWebSocket {
             }
         });
 
-        socketIO.on("dataTransmission", (Object... args) -> {
+        socketIO.on("data", (Object... args) -> {
             try {
-                if (args.length == 0) return;
+                if (args.length == 3) return;
                 logger.info("A new dataTransmission message has arrived");
                 List<MessageDto> messageDtoList =
-                        JSONUtilities.deserialize((String) args[0], new TypeReference<List<MessageDto>>() {
+                        JSONUtilities.deserialize((String) args[2], new TypeReference<List<MessageDto>>() {
                         });
                 messageHandler.inputDataTransmission(messageDtoList);
             } catch (IOException e) {
@@ -135,7 +134,8 @@ public class MorpheusWebSocket {
     }
 
     private void sendConfirmationReport(String report) {
-        socketIO.emit("confirmationReport", report);
+        Object[] arg = {"data", morpheusSerialNumber, report};
+        socketIO.emit("report", arg);
         logger.info("Configuration Report sent to cloud");
     }
 
@@ -164,7 +164,9 @@ public class MorpheusWebSocket {
         morpheusHello.put("morpheusId", morpheusSerialNumber);
         morpheusHello.put("type", "morpheus");
 
-        socketIO.emit("hello", morpheusHello.toString(), (Ack) args -> {
+        String[] arg = {"data", morpheusSerialNumber, morpheusHello.toString()};
+
+        socketIO.emit("hello", arg, (Ack) args -> {
             if (null != args && args.length > 0) {
                 switch (args[0].toString()
                                .toLowerCase()) {
@@ -211,7 +213,8 @@ public class MorpheusWebSocket {
         }
 
         try {
-            socketIO.emit(eventType, JSONUtilities.serialize(messageDto), (Ack) args -> {
+            Object[] arg = {"data", morpheusSerialNumber, JSONUtilities.serialize(messageDto)};
+            socketIO.emit(eventType, arg, args -> {
                 if (null != args && args.length > 0) {
                     switch (args[0].toString()
                                    .toLowerCase()) {
