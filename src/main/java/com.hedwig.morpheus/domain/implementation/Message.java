@@ -144,7 +144,7 @@ public class Message implements Comparable<Message> {
         public String toString() {
             String values = payload.entrySet()
                                    .stream()
-                                   .map(each -> String.join(":", each.getKey(), each.getValue()))
+                                   .map(each -> String.join(": ", each.getKey(), each.getValue()))
                                    .collect(Collectors.joining("\n"));
 
             return String.format("@\n%s\n@\n", values);

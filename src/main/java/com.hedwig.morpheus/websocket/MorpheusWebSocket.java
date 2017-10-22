@@ -10,7 +10,6 @@ import com.hedwig.morpheus.util.listener.DisconnectionListener;
 import com.hedwig.morpheus.util.tools.JSONUtilities;
 import com.hedwig.morpheus.util.tools.MessageAgeVerifier;
 import com.hedwig.morpheus.websocket.messageHandlers.interfaces.IMessageHandler;
-import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.json.JSONObject;
@@ -94,9 +93,12 @@ public class MorpheusWebSocket {
     private void addMessageListeners() {
         socketIO.on("configuration", args -> {
             try {
-                if (args.length <= 3) return;
+                if (args.length < 2) return;
                 logger.info("A new configuration message arrived");
-                ConfigurationDto configurationDto = JSONUtilities.deserialize((String) args[2], ConfigurationDto.class);
+
+                String payload = "[" + args[1] + "]";
+
+                ConfigurationDto configurationDto = JSONUtilities.deserialize(payload, ConfigurationDto.class);
 
                 String report = messageHandler.inputConfiguration(configurationDto);
                 sendConfirmationReport(report);
@@ -108,10 +110,13 @@ public class MorpheusWebSocket {
 
         socketIO.on("action", args -> {
             try {
-                if (args.length <= 3) return;
+                if (args.length < 2) return;
                 logger.info("A new actionRequest message has arrived");
+
+                String payload = "[" + args[1] + "]";
+
                 List<MessageDto> messageDtoList =
-                        JSONUtilities.deserialize((String) args[2], new TypeReference<List<MessageDto>>() {
+                        JSONUtilities.deserialize(payload, new TypeReference<List<MessageDto>>() {
                         });
                 messageHandler.inputActionRequest(messageDtoList);
             } catch (IOException e) {
@@ -121,10 +126,13 @@ public class MorpheusWebSocket {
 
         socketIO.on("data", (Object... args) -> {
             try {
-                if (args.length == 3) return;
+                if (args.length < 2) return;
                 logger.info("A new dataTransmission message has arrived");
+
+                String payload = "[" + args[1] + "]";
+
                 List<MessageDto> messageDtoList =
-                        JSONUtilities.deserialize((String) args[2], new TypeReference<List<MessageDto>>() {
+                        JSONUtilities.deserialize(payload, new TypeReference<List<MessageDto>>() {
                         });
                 messageHandler.inputDataTransmission(messageDtoList);
             } catch (IOException e) {
@@ -164,9 +172,9 @@ public class MorpheusWebSocket {
         morpheusHello.put("morpheusId", morpheusSerialNumber);
         morpheusHello.put("type", "morpheus");
 
-        String[] arg = {"data", morpheusSerialNumber, morpheusHello.toString()};
+        String[] arg = {morpheusSerialNumber, morpheusHello.toString()};
 
-        socketIO.emit("hello", arg, (Ack) args -> {
+        socketIO.emit("hello", arg, args -> {
             if (null != args && args.length > 0) {
                 switch (args[0].toString()
                                .toLowerCase()) {
@@ -213,7 +221,7 @@ public class MorpheusWebSocket {
         }
 
         try {
-            Object[] arg = {"data", morpheusSerialNumber, JSONUtilities.serialize(messageDto)};
+            Object[] arg = {morpheusSerialNumber, JSONUtilities.serialize(messageDto)};
             socketIO.emit(eventType, arg, args -> {
                 if (null != args && args.length > 0) {
                     switch (args[0].toString()
