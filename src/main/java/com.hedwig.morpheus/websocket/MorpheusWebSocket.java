@@ -96,7 +96,7 @@ public class MorpheusWebSocket {
                 if (args.length < 2) return;
                 logger.info("A new configuration message arrived");
 
-                String payload = "[" + args[1] + "]";
+                String payload = args[1].toString();
 
                 ConfigurationDto configurationDto = JSONUtilities.deserialize(payload, ConfigurationDto.class);
 
@@ -113,7 +113,7 @@ public class MorpheusWebSocket {
                 if (args.length < 2) return;
                 logger.info("A new actionRequest message has arrived");
 
-                String payload = "[" + args[1] + "]";
+                String payload = args[1].toString();
 
                 List<MessageDto> messageDtoList =
                         JSONUtilities.deserialize(payload, new TypeReference<List<MessageDto>>() {
@@ -129,7 +129,7 @@ public class MorpheusWebSocket {
                 if (args.length < 2) return;
                 logger.info("A new dataTransmission message has arrived");
 
-                String payload = "[" + args[1] + "]";
+                String payload = args[1].toString();
 
                 List<MessageDto> messageDtoList =
                         JSONUtilities.deserialize(payload, new TypeReference<List<MessageDto>>() {

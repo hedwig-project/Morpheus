@@ -37,9 +37,9 @@ morpheus:
       discardMessagesAfter: 60
 
 cloud:
-  protocol: http
-  host: 138.197.83.143
-  port: 9090
+  protocol: https
+  host: hedwig-cloud.ml
+  port: 443
 
 api:
   host: 138.197.83.143
