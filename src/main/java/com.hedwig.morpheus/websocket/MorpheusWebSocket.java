@@ -113,7 +113,7 @@ public class MorpheusWebSocket {
                 if (args.length < 2) return;
                 logger.info("A new actionRequest message has arrived");
 
-                String payload = args[1].toString();
+                String payload = "[" + args[1].toString() + "]";
 
                 List<MessageDto> messageDtoList =
                         JSONUtilities.deserialize(payload, new TypeReference<List<MessageDto>>() {
