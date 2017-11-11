@@ -12,6 +12,7 @@ import com.hedwig.morpheus.util.tools.MessageAgeVerifier;
 import com.hedwig.morpheus.websocket.messageHandlers.interfaces.IMessageHandler;
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import io.socket.engineio.client.EngineIOException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,6 +159,8 @@ public class MorpheusWebSocket {
                 })
                 .on(Socket.EVENT_CONNECT_ERROR, args -> {
                     logger.error("Error when trying to connect to cloud. Trying again.");
+                    logger.error(((EngineIOException) args[0]).getMessage().toString());
+                    logger.error(((EngineIOException) args[0]).getCause().toString());
                     connectedToCloud.set(false);
                 })
                 .on(Socket.EVENT_ERROR, (args) -> {
